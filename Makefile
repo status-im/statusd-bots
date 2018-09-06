@@ -1,3 +1,5 @@
+DOCKER_IMAGE := statusteam/statusd-bots
+
 dependencies:
 	dep ensure
 
@@ -9,5 +11,5 @@ image:
 	docker build . \
 		--label "commit=$(GIT_COMMIT)" \
 		--label "author=$(AUTHOR)" \
-		-t statusteam/statusd-bots:$(GIT_COMMIT)
-		-t statusteam/statusd-bots:latest
+		-t $(DOCKER_IMAGE):$(GIT_COMMIT) \
+		-t $(DOCKER_IMAGE):latest
