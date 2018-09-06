@@ -53,7 +53,7 @@ func main() {
 	log.Printf("tracked channels: %s\n", trackedChannels)
 
 	// used to print a channel name from a whisper topic
-	topicsToNamesMap, err := topicsToNames(defaultPublicChats)
+	topicsToNamesMap, err := topicsToNames(trackedChannels)
 	if err != nil {
 		log.Fatalf("failed to get topics to names mapping: %v", err)
 	}
@@ -69,11 +69,16 @@ func main() {
 			wg.Add(1)
 			defer wg.Done()
 
-			sub, err := subscribeMessages(shh, name, messages)
-			defer sub.Unsubscribe()
+			symKeyID, err := addPublicChatSymKey(shh, name)
+			if err != nil {
+				log.Fatalf("failed to add sym key: %v\n", err)
+			}
+
+			sub, err := subscribeMessages(shh, name, symKeyID, messages)
 			if err != nil {
 				log.Fatalf("failed to subscribe to messages: %v\n", err)
 			}
+			defer sub.Unsubscribe()
 
 			select {
 			case err := <-sub.Err():
@@ -109,20 +114,21 @@ func main() {
 	}
 }
 
-func subscribeMessages(c *shhclient.Client, chName string, messages chan *whisper.Message) (ethereum.Subscription, error) {
+func addPublicChatSymKey(c *shhclient.Client, chat string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	symKeyID, err := c.GenerateSymmetricKeyFromPassword(ctx, chName)
+	return c.GenerateSymmetricKeyFromPassword(ctx, chat)
+}
+
+func subscribeMessages(c *shhclient.Client, chat, symKeyID string, messages chan<- *whisper.Message) (ethereum.Subscription, error) {
+	topic, err := protocol.PublicChatTopic([]byte(chat))
 	if err != nil {
 		return nil, err
 	}
 
-	topic, err := protocol.PublicChatTopic([]byte(chName))
-	if err != nil {
-		return nil, err
-	}
-
-	return c.SubscribeMessages(context.Background(), whisper.Criteria{
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	return c.SubscribeMessages(ctx, whisper.Criteria{
 		SymKeyID: symKeyID,
 		MinPow:   0.001,
 		Topics:   []whisper.TopicType{topic},
