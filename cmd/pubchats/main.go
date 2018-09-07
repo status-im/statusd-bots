@@ -115,7 +115,7 @@ func main() {
 }
 
 func addPublicChatSymKey(c *shhclient.Client, chat string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	return c.GenerateSymmetricKeyFromPassword(ctx, chat)
 }
@@ -126,7 +126,7 @@ func subscribeMessages(c *shhclient.Client, chat, symKeyID string, messages chan
 		return nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	return c.SubscribeMessages(ctx, whisper.Criteria{
 		SymKeyID: symKeyID,
