@@ -38,12 +38,12 @@
 
 [[constraint]]
   name = "github.com/ethereum/go-ethereum"
-  version = "=v1.8.14"
+  version = "=v1.8.16"
   source = "github.com/status-im/go-ethereum"
 
 [[constraint]]
   name = "github.com/status-im/status-go"
-  version = "=v0.14.1"
+  version = "=v0.16.2"
 
 [[override]]
   name = "github.com/deckarep/golang-set"

@@ -48,12 +48,9 @@ func main() {
 	}
 	shh := shhclient.NewClient(rpcClient)
 
-	// all public channels that will be tracked
-	trackedChannels := append(defaultPublicChats, *publicChannels...)
-	log.Printf("tracked channels: %s\n", trackedChannels)
-
 	// used to print a channel name from a whisper topic
-	topicsToNamesMap, err := topicsToNames(trackedChannels)
+	log.Printf("tracked channels: %s", *trackedChannels)
+	topicsToNamesMap, err := topicsToNames(*trackedChannels)
 	if err != nil {
 		log.Fatalf("failed to get topics to names mapping: %v", err)
 	}
@@ -64,19 +61,19 @@ func main() {
 
 	var wg sync.WaitGroup
 
-	for _, name := range trackedChannels {
+	for _, name := range *trackedChannels {
 		go func(name string) {
 			wg.Add(1)
 			defer wg.Done()
 
 			symKeyID, err := addPublicChatSymKey(shh, name)
 			if err != nil {
-				log.Fatalf("failed to add sym key: %v\n", err)
+				log.Fatalf("failed to add sym key for channel '%s': %v", name, err)
 			}
 
 			sub, err := subscribeMessages(shh, name, symKeyID, messages)
 			if err != nil {
-				log.Fatalf("failed to subscribe to messages: %v\n", err)
+				log.Fatalf("failed to subscribe to messages for channel '%s': %v", name, err)
 			}
 			defer sub.Unsubscribe()
 
@@ -102,7 +99,7 @@ func main() {
 		case msg := <-messages:
 			chatName := topicsToNamesMap[msg.Topic]
 			source := hex.EncodeToString(msg.Sig)
-			log.Printf("received a message: topic=%v (%s) data=%s author=%s\n", msg.Topic, chatName, msg.Payload, source)
+			log.Printf("received a message: topic=%v (%s) data=%s author=%s", msg.Topic, chatName, msg.Payload, source)
 			messagesCounter.WithLabelValues(chatName, source).Inc()
 		case err := <-subErr:
 			log.Fatalf("subscription error: %v", err)
@@ -115,7 +112,8 @@ func main() {
 }
 
 func addPublicChatSymKey(c *shhclient.Client, chat string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	// This operation can be really slow, hence 10 seconds timeout.
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	return c.GenerateSymmetricKeyFromPassword(ctx, chat)
 }

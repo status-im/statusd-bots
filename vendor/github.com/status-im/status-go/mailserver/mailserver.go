@@ -29,9 +29,9 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/metrics"
 	"github.com/ethereum/go-ethereum/rlp"
-	whisper "github.com/ethereum/go-ethereum/whisper/whisperv6"
 	"github.com/status-im/status-go/db"
 	"github.com/status-im/status-go/params"
+	whisper "github.com/status-im/whisper/whisperv6"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/iterator"
 	"github.com/syndtr/goleveldb/leveldb/opt"
@@ -120,7 +120,7 @@ func (s *WMailServer) Init(shh *whisper.Whisper, config *params.WhisperConfig) e
 		return errDirectoryNotProvided
 	}
 
-	if len(config.MailServerPassword) == 0 && config.MailServerAsymKey == nil {
+	if len(config.MailServerPassword) == 0 && len(config.MailServerAsymKey) == 0 {
 		return errDecryptionMethodNotProvided
 	}
 
@@ -172,8 +172,12 @@ func (s *WMailServer) setupRequestMessageDecryptor(config *params.WhisperConfig)
 		s.symFilter = &whisper.Filter{KeySym: symKey}
 	}
 
-	if config.MailServerAsymKey != nil {
-		s.asymFilter = &whisper.Filter{KeyAsym: config.MailServerAsymKey}
+	if config.MailServerAsymKey != "" {
+		keyAsym, err := crypto.HexToECDSA(config.MailServerAsymKey)
+		if err != nil {
+			return err
+		}
+		s.asymFilter = &whisper.Filter{KeyAsym: keyAsym}
 	}
 
 	return nil

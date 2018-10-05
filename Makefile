@@ -13,3 +13,6 @@ image:
 		--label "author=$(AUTHOR)" \
 		-t $(DOCKER_IMAGE):$(GIT_COMMIT) \
 		-t $(DOCKER_IMAGE):latest
+
+build:
+	go build -o ./bin/pubchats ./cmd/pubchats
