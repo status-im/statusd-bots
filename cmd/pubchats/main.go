@@ -21,7 +21,7 @@ import (
 )
 
 func init() {
-	if err := logutils.OverrideRootLog(true, *verbosity, "", true); err != nil {
+	if err := logutils.OverrideRootLog(true, *verbosity, "", false); err != nil {
 		log.Fatalf("failed to override root log: %v\n", err)
 	}
 
@@ -35,7 +35,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to create a config: %v", err)
 	}
-	log.Printf("using config: %v\n", config)
+	log.Printf("using config: %v", config)
 
 	n := node.New()
 	if err := n.Start(config); err != nil {
