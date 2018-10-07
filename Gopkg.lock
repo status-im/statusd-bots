@@ -92,7 +92,7 @@
   revision = "0bce6a6887123b67a60366d2c9fe2dfb74289d2e"
 
 [[projects]]
-  digest = "1:34fa5a5d444765a1360983211916c4d2e65a3be75186277142d6aef5c21192db"
+  digest = "1:cf53a6be6cf3d947c0c7fb678237a7b34e06e4102411ecb843eedacb46759995"
   name = "github.com/ethereum/go-ethereum"
   packages = [
     ".",
@@ -104,6 +104,7 @@
     "accounts/usbwallet/internal/trezor",
     "common",
     "common/bitutil",
+    "common/fdlimit",
     "common/hexutil",
     "common/math",
     "common/mclock",
@@ -160,9 +161,9 @@
     "whisper/whisperv6",
   ]
   pruneopts = "T"
-  revision = "13115e12870cb2ebc1c8dfe55bc976d94efbeb90"
+  revision = "56c2fa69e0224e8f939a092b3aba20b23bb95c26"
   source = "github.com/status-im/go-ethereum"
-  version = "v1.8.14"
+  version = "v1.8.16"
 
 [[projects]]
   digest = "1:d1341a04a4443bba8c8af76ec6c3960206074490a1284b4853ff5a88a66c63b7"
@@ -220,6 +221,18 @@
   pruneopts = "UT"
   revision = "636bf0302bc95575d69441b25a2603156ffdddf1"
   version = "v1.1.1"
+
+[[projects]]
+  digest = "1:c1390f6efd4274fb865dac0e310ba16af4bdd915ac10fca5fe8504e20be8edcb"
+  name = "github.com/golang-migrate/migrate"
+  packages = [
+    ".",
+    "database",
+    "source",
+  ]
+  pruneopts = "UT"
+  revision = "93d53a5ae84d81945eedadfe8f6865530d61d51c"
+  version = "v3.5.1"
 
 [[projects]]
   digest = "1:bc38c7c481812e178d85160472e231c5e1c9a7f5845d67e23ee4e706933c10d8"
@@ -731,6 +744,14 @@
   version = "v0.3.7"
 
 [[projects]]
+  branch = "master"
+  digest = "1:2ec1843c72f1193a66f9fa03db5f7f9c53f1967383d2e4b07780b0185ddbbbdd"
+  name = "github.com/mutecomm/go-sqlcipher"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "f799951b4ab269c2ce24913961af2cb5d681cc43"
+
+[[projects]]
   digest = "1:450b7623b185031f3a456801155c8320209f75d0d4c4e633c6b1e59d44d6e392"
   name = "github.com/opentracing/opentracing-go"
   packages = [
@@ -842,6 +863,13 @@
   version = "v1.0.2"
 
 [[projects]]
+  digest = "1:6b6563f80404c957f6acb46f65f0e112c74e2855afcdba8fa7b774d1c0b82bed"
+  name = "github.com/status-im/doubleratchet"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "321788dbb6eac36f7dab04e631db139e13bb280b"
+
+[[projects]]
   branch = "master"
   digest = "1:8d27d462cd66c6c609d1d1693f9ff5ea1e6effd080eafe17a5e3f11643501b28"
   name = "github.com/status-im/go-multiaddr-ethv4"
@@ -851,17 +879,29 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:fccef730cbb50795cf2606b1f89c301a1aa220691acbb504be616b3a1efc4339"
+  digest = "1:b24abe471a63e51b7e42623bd44c641e21751f2aba4f400919b12a3347812dd0"
+  name = "github.com/status-im/migrate"
+  packages = [
+    ".",
+    "database/sqlcipher",
+    "source/go_bindata",
+  ]
+  pruneopts = "UT"
+  revision = "57d2e2abe46f80680b96640a8ce62d8187bee7e8"
+
+[[projects]]
+  branch = "master"
+  digest = "1:1813bebefb254e60242d8322ec97071882d08582c4853eadf623e62866ad8380"
   name = "github.com/status-im/rendezvous"
   packages = [
     ".",
     "protocol",
   ]
   pruneopts = "UT"
-  revision = "c865d89421c2817f33997ea765ba258d7f12ed84"
+  revision = "55370cdfd9f288059b03c04e23784bb8829a894c"
 
 [[projects]]
-  digest = "1:dd5835beba642b40a6cfa2c9d65cd58441e100e55fd4451408bde8740ee44a51"
+  digest = "1:90fc71afdbecabe0af326790c6dc8eaeca161b4e380754a189fa637e8bde6caa"
   name = "github.com/status-im/status-go"
   packages = [
     "account",
@@ -881,14 +921,26 @@
     "services/peer",
     "services/personal",
     "services/shhext",
+    "services/shhext/chat",
+    "services/shhext/chat/crypto",
+    "services/shhext/chat/migrations",
     "services/shhext/dedup",
     "services/status",
     "signal",
+    "static",
     "timesource",
   ]
   pruneopts = "UT"
-  revision = "0136ceb46ea6bdf4352ebb67cd0416a2cd87114c"
-  version = "v0.14.1"
+  revision = "fc54e0b06c24c0898e6d3280b93c8e0fa87a872b"
+  version = "v0.16.2"
+
+[[projects]]
+  branch = "master"
+  digest = "1:a2075e4e314cff4aadaf3ffe18b77659d259b1a46be9d2bdb0d5b9f8222f420c"
+  name = "github.com/status-im/whisper"
+  packages = ["whisperv6"]
+  pruneopts = "UT"
+  revision = "c72a926c11ddf4e422586d58b64691a95f9d526b"
 
 [[projects]]
   branch = "master"
@@ -985,11 +1037,13 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:26934159eaac6e5db7a94838b54eec4e75d4d1caf7a91aff90ff9d4ef2273b99"
+  digest = "1:ca970b57aede1ea32d7b108d98f98e3f144260b665be752e18432cbf3c003605"
   name = "golang.org/x/crypto"
   packages = [
     "blake2s",
     "blowfish",
+    "curve25519",
+    "hkdf",
     "pbkdf2",
     "ripemd160",
     "scrypt",
@@ -1084,14 +1138,6 @@
   pruneopts = "UT"
   revision = "e69e9a28bb62b977fdc58d051f1bb477b7cbe486"
   version = "v9.21.0"
-
-[[projects]]
-  branch = "v2"
-  digest = "1:0a2f4b974a413866afa1b41130d756643841fb9ad661b81c9a6dd9f1364ed19f"
-  name = "gopkg.in/karalabe/cookiejar.v2"
-  packages = ["collections/prque"]
-  pruneopts = "UT"
-  revision = "8dcd6a7f4951f6ff3ee9cbb919a06d8925822e57"
 
 [[projects]]
   branch = "v2"
