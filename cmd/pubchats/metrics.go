@@ -13,7 +13,7 @@ var (
 		Namespace: "shh",
 		Name:      "messages_total",
 		Help:      "Received messages counter.",
-	}, []string{"chat", "source"})
+	}, []string{"chat"})
 )
 
 func init() {

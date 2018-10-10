@@ -100,7 +100,7 @@ func main() {
 			chatName := topicsToNamesMap[msg.Topic]
 			source := hex.EncodeToString(msg.Sig)
 			log.Printf("received a message: topic=%v (%s) data=%s author=%s", msg.Topic, chatName, msg.Payload, source)
-			messagesCounter.WithLabelValues(chatName, source).Inc()
+			messagesCounter.WithLabelValues(chatName).Inc()
 		case err := <-subErr:
 			log.Fatalf("subscription error: %v", err)
 		case <-signals:
