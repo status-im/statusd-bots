@@ -94,6 +94,9 @@ func main() {
 
 	log.Println("waiting for messages...")
 
+	// mapping chat => participants
+	chatParticipants := make(map[string]map[string]struct{})
+
 	for {
 		select {
 		case msg := <-messages:
@@ -101,6 +104,21 @@ func main() {
 			source := hex.EncodeToString(msg.Sig)
 			log.Printf("received a message: topic=%v (%s) data=%s author=%s", msg.Topic, chatName, msg.Payload, source)
 			messagesCounter.WithLabelValues(chatName).Inc()
+
+			// detect unique participants per chat
+			var (
+				ok          bool
+				participans map[string]struct{}
+			)
+			participans, ok = chatParticipants[chatName]
+			if !ok {
+				participans = make(map[string]struct{})
+				chatParticipants[chatName] = participans
+			}
+			if _, ok := participans[source]; !ok {
+				uniqueCounter.WithLabelValues(chatName).Inc()
+				participans[source] = struct{}{}
+			}
 		case err := <-subErr:
 			log.Fatalf("subscription error: %v", err)
 		case <-signals:
