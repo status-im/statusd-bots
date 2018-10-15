@@ -2,7 +2,12 @@ package protocol
 
 import (
 	"github.com/ethereum/go-ethereum/crypto/sha3"
-	whisper "github.com/ethereum/go-ethereum/whisper/whisperv6"
+	whisper "github.com/status-im/whisper/whisperv6"
+)
+
+const (
+	// MailServerPassword is required to make requests to MailServers.
+	MailServerPassword = "status-offline-inbox"
 )
 
 // PublicChatTopic returns a Whisper topic for a public channel name.

@@ -901,7 +901,7 @@
   revision = "55370cdfd9f288059b03c04e23784bb8829a894c"
 
 [[projects]]
-  digest = "1:90fc71afdbecabe0af326790c6dc8eaeca161b4e380754a189fa637e8bde6caa"
+  digest = "1:201a517f11f426e91966811f9c4052d6ef680494a0bb61dfca4a23937156e560"
   name = "github.com/status-im/status-go"
   packages = [
     "account",
@@ -928,6 +928,7 @@
     "services/status",
     "signal",
     "static",
+    "t/helpers",
     "timesource",
   ]
   pruneopts = "UT"
@@ -936,11 +937,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a2075e4e314cff4aadaf3ffe18b77659d259b1a46be9d2bdb0d5b9f8222f420c"
+  digest = "1:e6e970c3fbba63a79b624672ea19276588c5cce2254663d9ec2d85fc3424f1a8"
   name = "github.com/status-im/whisper"
-  packages = ["whisperv6"]
+  packages = [
+    "shhclient",
+    "whisperv6",
+  ]
   pruneopts = "UT"
-  revision = "c72a926c11ddf4e422586d58b64691a95f9d526b"
+  revision = "ca67be6b3b4d656b087e61a0d9ae6b194c4c2e15"
 
 [[projects]]
   branch = "master"
@@ -1169,6 +1173,7 @@
   input-imports = [
     "github.com/ethereum/go-ethereum",
     "github.com/ethereum/go-ethereum/crypto/sha3",
+    "github.com/ethereum/go-ethereum/p2p",
     "github.com/ethereum/go-ethereum/p2p/discv5",
     "github.com/ethereum/go-ethereum/whisper/shhclient",
     "github.com/ethereum/go-ethereum/whisper/whisperv6",
@@ -1178,7 +1183,11 @@
     "github.com/status-im/status-go/logutils",
     "github.com/status-im/status-go/node",
     "github.com/status-im/status-go/params",
+    "github.com/status-im/status-go/services/shhext",
     "github.com/status-im/status-go/signal",
+    "github.com/status-im/status-go/t/helpers",
+    "github.com/status-im/whisper/shhclient",
+    "github.com/status-im/whisper/whisperv6",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

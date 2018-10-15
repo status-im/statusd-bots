@@ -16,3 +16,4 @@ image:
 
 build:
 	go build -o ./bin/pubchats ./cmd/pubchats
+	go build -o ./bin/bench-mailserver ./cmd/bench-mailserver
