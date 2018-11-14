@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"encoding/hex"
+	"encoding/json"
 	"log"
 	"math/rand"
 	"os"
-	"os/signal"
+	stdsignal "os/signal"
 	"sync"
 	"syscall"
 	"time"
@@ -17,21 +18,19 @@ import (
 	"github.com/status-im/status-go/node"
 	"github.com/status-im/status-go/params"
 	"github.com/status-im/status-go/services/shhext"
-	statussignal "github.com/status-im/status-go/signal"
+	"github.com/status-im/status-go/signal"
 	"github.com/status-im/status-go/t/helpers"
 	"github.com/status-im/statusd-bots/protocol"
 	"github.com/status-im/whisper/shhclient"
 	whisper "github.com/status-im/whisper/whisperv6"
 )
 
+var mailSignals = make(chan *signal.Envelope, 1)
+
 func init() {
 	if err := logutils.OverrideRootLog(true, *verbosity, "", false); err != nil {
 		log.Fatalf("failed to override root log: %v\n", err)
 	}
-
-	statussignal.SetDefaultNodeNotificationHandler(func(event string) {
-		log.Printf("received signal: %v\n", event)
-	})
 }
 
 func main() {
@@ -59,7 +58,7 @@ func main() {
 	shhextAPI := shhext.NewPublicAPI(shhextService)
 
 	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+	stdsignal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
 	log.Println("subscribe for messages...")
 
@@ -105,12 +104,49 @@ func main() {
 		log.Fatalf("failed to generate sym key for mail server: %v", err)
 	}
 
+	// wait for all message requests
 	var wg sync.WaitGroup
 
+	// collect mail server request signals
+	mailSignals := make(chan *signal.Envelope)
+	counter := map[string]int{
+		signal.EventMailServerRequestCompleted: 0,
+		signal.EventMailServerRequestExpired:   0,
+	}
+
+	// setup signals handler
+	signal.SetDefaultNodeNotificationHandler(
+		filterNodeNotificationHandler(
+			printNodeNotificationHandler,
+			mailSignals,
+			[]string{
+				signal.EventMailServerRequestCompleted,
+				signal.EventMailServerRequestExpired,
+			},
+		),
+	)
+
+	// process mail signals
+	go func() {
+		for {
+			event := <-mailSignals
+			counter[event.Type]++
+			wg.Done()
+		}
+	}()
+
+	// wait for all requests to finish and print result
+	go func() {
+		wg.Wait()
+		log.Printf("result: %v", counter)
+		os.Exit(0)
+	}()
+
+	// send mail server requests
 	for i := 0; i < *concurrency; i++ {
 		wg.Add(1)
+
 		go func() {
-			defer wg.Done()
 			hash, err := shhextAPI.RequestMessages(nil, shhext.MessagesRequest{
 				MailServerPeer: mailserverEnode,
 				SymKeyID:       mailServerSymKeyID,
@@ -161,4 +197,27 @@ func subscribeMessages(c *shhclient.Client, chat, symKeyID string, messages chan
 		Topics:   []whisper.TopicType{topic},
 		AllowP2P: true,
 	}, messages)
+}
+
+func printNodeNotificationHandler(event string) {
+	log.Printf("received signal: %v\n", event)
+}
+
+func filterNodeNotificationHandler(
+	fn func(string), in chan<- *signal.Envelope, types []string,
+) func(string) {
+	return func(event string) {
+		fn(event)
+
+		var envelope signal.Envelope
+		if err := json.Unmarshal([]byte(event), &envelope); err != nil {
+			log.Fatalf("faild to unmarshal signal Envelope: %s", err)
+		}
+
+		for _, typ := range types {
+			if typ == envelope.Type {
+				in <- &envelope
+			}
+		}
+	}
 }
