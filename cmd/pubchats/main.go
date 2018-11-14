@@ -11,13 +11,13 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/whisper/shhclient"
-	whisper "github.com/ethereum/go-ethereum/whisper/whisperv6"
 	"github.com/status-im/status-go/logutils"
 	"github.com/status-im/status-go/node"
 	"github.com/status-im/status-go/params"
 	statussignal "github.com/status-im/status-go/signal"
 	"github.com/status-im/statusd-bots/protocol"
+	"github.com/status-im/whisper/shhclient"
+	whisper "github.com/status-im/whisper/whisperv6"
 )
 
 func init() {

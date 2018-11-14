@@ -92,7 +92,7 @@
   revision = "0bce6a6887123b67a60366d2c9fe2dfb74289d2e"
 
 [[projects]]
-  digest = "1:cf53a6be6cf3d947c0c7fb678237a7b34e06e4102411ecb843eedacb46759995"
+  digest = "1:e221b8d0ccd91e9ee0a2ddda27ec75518dd683de945d01c87816f64ce418bf91"
   name = "github.com/ethereum/go-ethereum"
   packages = [
     ".",
@@ -142,7 +142,6 @@
     "les/flowcontrol",
     "light",
     "log",
-    "log/term",
     "metrics",
     "metrics/exp",
     "miner",
@@ -150,6 +149,7 @@
     "p2p",
     "p2p/discover",
     "p2p/discv5",
+    "p2p/enode",
     "p2p/enr",
     "p2p/nat",
     "p2p/netutil",
@@ -161,9 +161,9 @@
     "whisper/whisperv6",
   ]
   pruneopts = "T"
-  revision = "56c2fa69e0224e8f939a092b3aba20b23bb95c26"
+  revision = "2ad6673303bb48f8e3c2865386cfa928e92dbcbd"
   source = "github.com/status-im/go-ethereum"
-  version = "v1.8.16"
+  version = "v1.8.17"
 
 [[projects]]
   digest = "1:d1341a04a4443bba8c8af76ec6c3960206074490a1284b4853ff5a88a66c63b7"
@@ -863,19 +863,19 @@
   version = "v1.0.2"
 
 [[projects]]
-  digest = "1:6b6563f80404c957f6acb46f65f0e112c74e2855afcdba8fa7b774d1c0b82bed"
+  digest = "1:ad9d59979f3ea0f69618fbe3cc8bf4b853fea653e8da64cdafc3d76c9efdcc45"
   name = "github.com/status-im/doubleratchet"
   packages = ["."]
   pruneopts = "UT"
-  revision = "321788dbb6eac36f7dab04e631db139e13bb280b"
+  revision = "4dcb6cba284ae9f97129e2a98b9277f629d9dbc4"
 
 [[projects]]
   branch = "master"
-  digest = "1:8d27d462cd66c6c609d1d1693f9ff5ea1e6effd080eafe17a5e3f11643501b28"
+  digest = "1:e8f4efd87b91ee8464ea426b62802c71698025fbda83be5efefd3bc663605d95"
   name = "github.com/status-im/go-multiaddr-ethv4"
   packages = ["."]
   pruneopts = "UT"
-  revision = "17cb1ad76379d65e802eacc786d8f67eebd7cd6d"
+  revision = "cbcba3a7c121e29718d9011ffc9e2b78ac6d5c99"
 
 [[projects]]
   branch = "master"
@@ -901,7 +901,7 @@
   revision = "55370cdfd9f288059b03c04e23784bb8829a894c"
 
 [[projects]]
-  digest = "1:201a517f11f426e91966811f9c4052d6ef680494a0bb61dfca4a23937156e560"
+  digest = "1:a190b0dbf9885582151b43036fb8b5cd8ce19e519575b0496ecf07f203c30ad3"
   name = "github.com/status-im/status-go"
   packages = [
     "account",
@@ -932,19 +932,19 @@
     "timesource",
   ]
   pruneopts = "UT"
-  revision = "fc54e0b06c24c0898e6d3280b93c8e0fa87a872b"
-  version = "v0.16.2"
+  revision = "52a1bdfed669718a61093bbcc0aa8da917d029f9"
+  version = "0.17.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:e6e970c3fbba63a79b624672ea19276588c5cce2254663d9ec2d85fc3424f1a8"
+  digest = "1:73fd272f7e37f84d8f9af1a2b51a045a6f84d55e9b8fd66d28492ac5f051188a"
   name = "github.com/status-im/whisper"
   packages = [
     "shhclient",
     "whisperv6",
   ]
   pruneopts = "UT"
-  revision = "ca67be6b3b4d656b087e61a0d9ae6b194c4c2e15"
+  revision = "e25ea1d673d5982b16fd3e51ed2a0d8f91b809d9"
+  version = "v1.3.0"
 
 [[projects]]
   branch = "master"
@@ -1122,18 +1122,6 @@
   pruneopts = "UT"
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
   version = "v0.3.0"
-
-[[projects]]
-  branch = "master"
-  digest = "1:a05bd2d296bc727082abcb63ff52615b4dcc6219d8b61e99fd83d605dc779a18"
-  name = "golang.org/x/tools"
-  packages = [
-    "go/ast/astutil",
-    "imports",
-    "internal/fastwalk",
-  ]
-  pruneopts = "UT"
-  revision = "0aa4b8830f481fed77b73cf7cea2bc3129e05148"
 
 [[projects]]
   digest = "1:e2f64cca6e235f32cd4c2f9be9ae0cda1f8608fc6fdb68936e8d10e4e0bb074d"

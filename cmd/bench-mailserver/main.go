@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -67,7 +68,6 @@ func main() {
 		log.Fatalf("failed to add sym key for channel '%s': %v", *channel, err)
 	}
 
-	// TODO(adam): this does not work and messages are not displayed.
 	messages := make(chan *whisper.Message)
 	sub, err := subscribeMessages(shh, *channel, symKeyID, messages)
 	if err != nil {
@@ -105,8 +105,12 @@ func main() {
 		log.Fatalf("failed to generate sym key for mail server: %v", err)
 	}
 
+	var wg sync.WaitGroup
+
 	for i := 0; i < *concurrency; i++ {
+		wg.Add(1)
 		go func() {
+			defer wg.Done()
 			hash, err := shhextAPI.RequestMessages(nil, shhext.MessagesRequest{
 				MailServerPeer: mailserverEnode,
 				SymKeyID:       mailServerSymKeyID,
@@ -153,7 +157,8 @@ func subscribeMessages(c *shhclient.Client, chat, symKeyID string, messages chan
 	defer cancel()
 	return c.SubscribeMessages(ctx, whisper.Criteria{
 		SymKeyID: symKeyID,
-		MinPow:   0.001,
+		MinPow:   0,
 		Topics:   []whisper.TopicType{topic},
+		AllowP2P: true,
 	}, messages)
 }

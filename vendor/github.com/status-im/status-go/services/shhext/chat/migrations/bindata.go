@@ -2,6 +2,12 @@
 // sources:
 // 1536754952_initial_schema.down.sql
 // 1536754952_initial_schema.up.sql
+// 1539249977_update_ratchet_info.down.sql
+// 1539249977_update_ratchet_info.up.sql
+// 1540715431_add_version.down.sql
+// 1540715431_add_version.up.sql
+// 1541164797_add_installations.down.sql
+// 1541164797_add_installations.up.sql
 // static.go
 // DO NOT EDIT!
 
@@ -85,7 +91,7 @@ func _1536754952_initial_schemaDownSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "1536754952_initial_schema.down.sql", size: 83, mode: os.FileMode(420), modTime: time.Unix(1536915096, 0)}
+	info := bindataFileInfo{name: "1536754952_initial_schema.down.sql", size: 83, mode: os.FileMode(420), modTime: time.Unix(1539606161, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -105,7 +111,127 @@ func _1536754952_initial_schemaUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "1536754952_initial_schema.up.sql", size: 962, mode: os.FileMode(420), modTime: time.Unix(1536915096, 0)}
+	info := bindataFileInfo{name: "1536754952_initial_schema.up.sql", size: 962, mode: os.FileMode(420), modTime: time.Unix(1539606161, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var __1539249977_update_ratchet_infoDownSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x6c\x8f\x41\x4b\xc4\x30\x10\x85\xef\xf9\x15\xef\xd8\xc2\x9e\xbc\xee\xa9\x8d\x53\x29\x86\x64\x8d\x29\xe8\x29\xd4\xed\xe8\x06\xdb\xec\xd2\x46\xa1\xff\x5e\x22\x52\x59\xf4\x3a\xdf\xf7\x78\x6f\x6e\xad\x39\xc0\x55\xb5\x22\xcc\x7d\x3a\x9e\x38\xf9\x10\x5f\xcf\xfe\xf3\x66\x2f\x84\xb4\x54\x39\xfa\x07\xa3\x10\xc0\xcb\x47\x1c\x46\xf6\x61\x40\xad\x4c\x0d\x6d\x1c\x74\xa7\xd4\x4e\x00\x7c\x39\xf1\xc4\x73\x3f\xfa\x77\x5e\xbf\x71\xbe\x86\x81\x63\x0a\x69\xfd\xeb\x2f\xeb\x34\x71\x9a\xc3\x71\xf3\xaf\x70\x88\x4b\xea\xc7\xb1\x4f\xe1\x1c\x73\x9f\xa3\x27\x77\x25\x74\xba\x7d\xe8\xa8\xd8\x16\xed\xb6\xae\x12\x46\x43\x1a\xdd\xa8\x56\x3a\x58\x3a\xa8\x4a\x52\x8e\x34\xc6\x52\x7b\xa7\x71\x4f\xcf\xf8\x0d\x96\xb0\xd4\x90\x25\x2d\xe9\xf1\xe7\xc1\xa5\x58\xc2\x5b\xe4\xc1\x5f\x66\xce\xf3\x4a\x51\xee\xc5\x57\x00\x00\x00\xff\xff\x69\x51\x9b\xb4\x37\x01\x00\x00")
+
+func _1539249977_update_ratchet_infoDownSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__1539249977_update_ratchet_infoDownSql,
+		"1539249977_update_ratchet_info.down.sql",
+	)
+}
+
+func _1539249977_update_ratchet_infoDownSql() (*asset, error) {
+	bytes, err := _1539249977_update_ratchet_infoDownSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "1539249977_update_ratchet_info.down.sql", size: 311, mode: os.FileMode(420), modTime: time.Unix(1540738831, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var __1539249977_update_ratchet_infoUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x6c\x8f\x41\x4f\x84\x30\x10\x85\xef\xfd\x15\x73\x84\x84\x93\x57\x4e\x50\x07\x43\xac\xed\x5a\x4b\xa2\xa7\x06\x97\xd1\x6d\x16\xca\x86\x56\x13\xfe\xbd\xa9\x31\x28\xea\xf5\xbd\x6f\xde\x7b\x73\x8d\x02\x0d\x42\xa3\xd5\x1d\x04\x0a\xc1\xcd\x3e\x94\xec\xa7\x7a\xa6\x35\x29\x5a\x1d\xc0\x54\xb5\x40\x58\xfa\x78\x3c\x51\xb4\xce\xbf\xcc\x25\x63\x5c\x63\x65\xf0\x1f\xcf\xbe\x5f\x41\xc6\x00\x9e\xdf\xfc\x30\x92\x75\x03\xd4\x42\xd5\x20\x95\x01\xd9\x09\x51\x30\x00\xba\x9c\x68\xa2\xa5\x1f\xed\x99\xd6\x4f\x3b\xa9\x6e\x20\x1f\x5d\x5c\xff\xf2\x61\x9d\x26\x8a\x8b\x3b\x6e\xfc\xce\x76\x3e\xc4\x7e\x1c\xfb\xe8\x66\x9f\xfa\x0c\x3e\x9a\x1d\xd0\xc9\xf6\xbe\xc3\x6c\x5b\x54\x6c\x5d\xc5\xef\xe3\x1c\x94\x04\xae\x64\x23\x5a\x6e\x40\xe3\x41\x54\x1c\x53\x46\xa3\x34\xb6\x37\x12\x6e\xf1\x09\xbe\x93\x72\xd0\xd8\xa0\x46\xc9\xf1\xe1\xeb\xe3\x90\x05\xf7\xea\x69\xb0\x97\x85\xd2\xde\x9c\xe5\x25\xfb\x08\x00\x00\xff\xff\xb6\x31\x2b\x32\x70\x01\x00\x00")
+
+func _1539249977_update_ratchet_infoUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__1539249977_update_ratchet_infoUpSql,
+		"1539249977_update_ratchet_info.up.sql",
+	)
+}
+
+func _1539249977_update_ratchet_infoUpSql() (*asset, error) {
+	bytes, err := _1539249977_update_ratchet_infoUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "1539249977_update_ratchet_info.up.sql", size: 368, mode: os.FileMode(420), modTime: time.Unix(1540738831, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var __1540715431_add_versionDownSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x72\xf4\x09\x71\x0d\x52\x08\x71\x74\xf2\x71\x55\xc8\x4e\xad\x2c\x56\x70\x09\xf2\x0f\x50\x70\xf6\xf7\x09\xf5\xf5\x53\x28\x4e\x2d\x2e\xce\xcc\xcf\x8b\xcf\x4c\xb1\xe6\x42\x56\x08\x15\x47\x55\x0c\xd2\x1d\x9f\x9c\x5f\x9a\x57\x82\xaa\x38\xa9\x34\x2f\x25\x27\x15\x55\x6d\x59\x6a\x11\xc8\x00\x6b\x2e\x40\x00\x00\x00\xff\xff\xda\x5d\x80\x2d\x7f\x00\x00\x00")
+
+func _1540715431_add_versionDownSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__1540715431_add_versionDownSql,
+		"1540715431_add_version.down.sql",
+	)
+}
+
+func _1540715431_add_versionDownSql() (*asset, error) {
+	bytes, err := _1540715431_add_versionDownSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "1540715431_add_version.down.sql", size: 127, mode: os.FileMode(420), modTime: time.Unix(1541170185, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var __1540715431_add_versionUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x8c\xcd\xb1\x0e\x02\x21\x0c\xc6\xf1\xdd\xa7\xf8\x1e\xc1\xdd\x09\xa4\x67\x4c\x7a\x90\x90\x32\x93\xe8\x31\x5c\x54\x2e\x8a\x98\xf8\xf6\x06\xe3\xc2\xa2\xae\x6d\xff\xbf\x1a\x62\x12\xc2\xe0\xdd\x88\x53\x7a\x96\xcd\x4a\xb1\x90\x87\x28\xcd\xf4\x9e\x40\x19\x83\xad\xe3\x30\x5a\x94\x74\x8d\xb9\x5e\xb0\xb7\x42\x3b\xf2\xb0\x4e\x60\x03\x33\x0c\x0d\x2a\xb0\x60\xfd\xab\x2f\x65\x5e\x72\x9c\x27\x68\x76\xba\x3f\xfe\x2c\xbb\xa0\x01\xf1\xb8\xd4\x7c\xff\xfb\xe7\xa1\xe6\xe9\x9c\x3a\xe5\x91\x6e\x4d\xfe\x4a\xbc\x02\x00\x00\xff\xff\x0e\x27\x2c\x52\x09\x01\x00\x00")
+
+func _1540715431_add_versionUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__1540715431_add_versionUpSql,
+		"1540715431_add_version.up.sql",
+	)
+}
+
+func _1540715431_add_versionUpSql() (*asset, error) {
+	bytes, err := _1540715431_add_versionUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "1540715431_add_version.up.sql", size: 265, mode: os.FileMode(420), modTime: time.Unix(1541170185, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var __1541164797_add_installationsDownSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x72\x09\xf2\x0f\x50\x08\x71\x74\xf2\x71\x55\xc8\xcc\x2b\x2e\x49\xcc\xc9\x49\x2c\xc9\xcc\xcf\x2b\xb6\xe6\x02\x04\x00\x00\xff\xff\xd8\xbf\x14\x75\x1a\x00\x00\x00")
+
+func _1541164797_add_installationsDownSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__1541164797_add_installationsDownSql,
+		"1541164797_add_installations.down.sql",
+	)
+}
+
+func _1541164797_add_installationsDownSql() (*asset, error) {
+	bytes, err := _1541164797_add_installationsDownSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "1541164797_add_installations.down.sql", size: 26, mode: os.FileMode(420), modTime: time.Unix(1541165366, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var __1541164797_add_installationsUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x5c\xce\xb1\x6a\xc3\x30\x14\x85\xe1\xdd\x4f\x71\x46\x1b\xbc\x74\xee\x24\xc9\xd7\x46\x70\xb9\x6a\x5d\x09\xba\x05\x05\x6b\x10\xd8\x4a\xc0\x5a\xf2\xf6\xc1\x43\x20\xce\xfc\x7f\x70\x8e\x99\x49\x79\x82\x57\x9a\x09\xb9\xec\x35\xae\x6b\xac\xf9\x56\x76\xa0\x6d\x80\xbc\xa4\x52\x73\x7d\x40\xb3\xd3\x10\xe7\x21\x81\xb9\x3f\xca\x1b\xbe\xe4\x05\x9e\xfe\xfd\x09\xd4\xbc\xa5\xbd\xc6\xed\x8e\x20\x7f\x76\x12\x1a\xa0\xed\x04\x2b\x67\x96\x4a\xbc\xae\x69\x81\x76\x8e\x49\x09\x06\x1a\x55\x60\x8f\xaf\x23\x06\xb1\xbf\x81\xda\xd7\x8b\xfe\x73\xb5\x83\x13\x18\x27\x23\x5b\xe3\x31\xd3\x0f\x2b\x43\x4d\xf7\xdd\x3c\x03\x00\x00\xff\xff\x28\x14\xac\x9d\xd8\x00\x00\x00")
+
+func _1541164797_add_installationsUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__1541164797_add_installationsUpSql,
+		"1541164797_add_installations.up.sql",
+	)
+}
+
+func _1541164797_add_installationsUpSql() (*asset, error) {
+	bytes, err := _1541164797_add_installationsUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "1541164797_add_installations.up.sql", size: 216, mode: os.FileMode(420), modTime: time.Unix(1541165467, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -125,7 +251,7 @@ func staticGo() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "static.go", size: 188, mode: os.FileMode(420), modTime: time.Unix(1536915096, 0)}
+	info := bindataFileInfo{name: "static.go", size: 188, mode: os.FileMode(420), modTime: time.Unix(1539606161, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -184,6 +310,12 @@ func AssetNames() []string {
 var _bindata = map[string]func() (*asset, error){
 	"1536754952_initial_schema.down.sql": _1536754952_initial_schemaDownSql,
 	"1536754952_initial_schema.up.sql": _1536754952_initial_schemaUpSql,
+	"1539249977_update_ratchet_info.down.sql": _1539249977_update_ratchet_infoDownSql,
+	"1539249977_update_ratchet_info.up.sql": _1539249977_update_ratchet_infoUpSql,
+	"1540715431_add_version.down.sql": _1540715431_add_versionDownSql,
+	"1540715431_add_version.up.sql": _1540715431_add_versionUpSql,
+	"1541164797_add_installations.down.sql": _1541164797_add_installationsDownSql,
+	"1541164797_add_installations.up.sql": _1541164797_add_installationsUpSql,
 	"static.go": staticGo,
 }
 
@@ -229,6 +361,12 @@ type bintree struct {
 var _bintree = &bintree{nil, map[string]*bintree{
 	"1536754952_initial_schema.down.sql": &bintree{_1536754952_initial_schemaDownSql, map[string]*bintree{}},
 	"1536754952_initial_schema.up.sql": &bintree{_1536754952_initial_schemaUpSql, map[string]*bintree{}},
+	"1539249977_update_ratchet_info.down.sql": &bintree{_1539249977_update_ratchet_infoDownSql, map[string]*bintree{}},
+	"1539249977_update_ratchet_info.up.sql": &bintree{_1539249977_update_ratchet_infoUpSql, map[string]*bintree{}},
+	"1540715431_add_version.down.sql": &bintree{_1540715431_add_versionDownSql, map[string]*bintree{}},
+	"1540715431_add_version.up.sql": &bintree{_1540715431_add_versionUpSql, map[string]*bintree{}},
+	"1541164797_add_installations.down.sql": &bintree{_1541164797_add_installationsDownSql, map[string]*bintree{}},
+	"1541164797_add_installations.up.sql": &bintree{_1541164797_add_installationsUpSql, map[string]*bintree{}},
 	"static.go": &bintree{staticGo, map[string]*bintree{}},
 }}
 
