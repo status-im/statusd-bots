@@ -3,17 +3,19 @@ package shhext
 import (
 	"context"
 	"crypto/ecdsa"
-	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
 	"time"
+
+	"github.com/ethereum/go-ethereum/rlp"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/p2p/discover"
+	"github.com/ethereum/go-ethereum/p2p/enode"
 	"github.com/status-im/status-go/services/shhext/chat"
 	whisper "github.com/status-im/whisper/whisperv6"
 )
@@ -63,7 +65,11 @@ type MessagesRequest struct {
 	Cursor string `json:"cursor"`
 
 	// Topic is a regular Whisper topic.
+	// DEPRECATED
 	Topic whisper.TopicType `json:"topic"`
+
+	// Topics is a list of Whisper topics.
+	Topics []whisper.TopicType `json:"topics"`
 
 	// SymKeyID is an ID of a symmetric key to authenticate to MailServer.
 	// It's derived from MailServer password.
@@ -95,6 +101,22 @@ func (r *MessagesRequest) setDefaults(now time.Time) {
 	if r.Timeout == 0 {
 		r.Timeout = defaultRequestTimeout
 	}
+}
+
+// MessagesRequestPayload is a payload sent to the Mail Server.
+type MessagesRequestPayload struct {
+	// Lower is a lower bound of time range for which messages are requested.
+	Lower uint32
+	// Upper is a lower bound of time range for which messages are requested.
+	Upper uint32
+	// Bloom is a bloom filter to filter envelopes.
+	Bloom []byte
+	// Limit is the max number of envelopes to return.
+	Limit uint32
+	// Cursor is used for pagination of the results.
+	Cursor []byte
+	// Batch set to true indicates that the client supports batched response.
+	Batch bool
 }
 
 // -----
@@ -141,7 +163,7 @@ func (api *PublicAPI) RequestMessages(_ context.Context, r MessagesRequest) (hex
 
 	var err error
 
-	mailServerNode, err := discover.ParseNode(r.MailServerPeer)
+	mailServerNode, err := enode.ParseV4(r.MailServerPeer)
 	if err != nil {
 		return nil, fmt.Errorf("%v: %v", ErrInvalidMailServerPeer, err)
 	}
@@ -157,14 +179,16 @@ func (api *PublicAPI) RequestMessages(_ context.Context, r MessagesRequest) (hex
 			return nil, fmt.Errorf("%v: %v", ErrInvalidSymKeyID, err)
 		}
 	} else {
-		publicKey, err = mailServerNode.ID.Pubkey()
-		if err != nil {
-			return nil, fmt.Errorf("%v: %v", ErrInvalidPublicKey, err)
-		}
+		publicKey = mailServerNode.Pubkey()
+	}
+
+	payload, err := makePayload(r)
+	if err != nil {
+		return nil, err
 	}
 
 	envelope, err := makeEnvelop(
-		makePayload(r),
+		payload,
 		symKey,
 		publicKey,
 		api.service.nodeID,
@@ -176,7 +200,7 @@ func (api *PublicAPI) RequestMessages(_ context.Context, r MessagesRequest) (hex
 	}
 
 	hash := envelope.Hash()
-	if err := shh.RequestHistoricMessages(mailServerNode.ID[:], envelope); err != nil {
+	if err := shh.RequestHistoricMessages(mailServerNode.ID().Bytes(), envelope); err != nil {
 		return nil, err
 	}
 
@@ -232,11 +256,11 @@ func (api *PublicAPI) SendPublicMessage(ctx context.Context, msg chat.SendPublic
 	}
 
 	// Enrich with transport layer info
-	whisperMessage := chat.PublicMessageToWhisper(&msg, protocolMessage)
+	whisperMessage := chat.PublicMessageToWhisper(msg, protocolMessage)
 	whisperMessage.SymKeyID = symKeyID
 
 	// And dispatch
-	return api.Post(ctx, *whisperMessage)
+	return api.Post(ctx, whisperMessage)
 }
 
 // SendDirectMessage sends a 1:1 chat message to the underlying transport
@@ -255,9 +279,8 @@ func (api *PublicAPI) SendDirectMessage(ctx context.Context, msg chat.SendDirect
 		return nil, err
 	}
 
-	keys := []*ecdsa.PublicKey{publicKey}
 	// This is transport layer-agnostic
-	protocolMessages, err := api.service.protocol.BuildDirectMessage(privateKey, keys, msg.Payload)
+	protocolMessages, err := api.service.protocol.BuildDirectMessage(privateKey, msg.Payload, publicKey)
 	if err != nil {
 		return nil, err
 	}
@@ -267,16 +290,52 @@ func (api *PublicAPI) SendDirectMessage(ctx context.Context, msg chat.SendDirect
 	for key, message := range protocolMessages {
 		msg.PubKey = crypto.FromECDSAPub(key)
 		// Enrich with transport layer info
-		whisperMessage := chat.DirectMessageToWhisper(&msg, message)
+		whisperMessage := chat.DirectMessageToWhisper(msg, message)
 
 		// And dispatch
-		hash, err := api.Post(ctx, *whisperMessage)
+		hash, err := api.Post(ctx, whisperMessage)
 		if err != nil {
 			return nil, err
 		}
 		response = append(response, hash)
 
 	}
+	return response, nil
+}
+
+// SendPairingMessage sends a 1:1 chat message to our own devices to initiate a pairing session
+func (api *PublicAPI) SendPairingMessage(ctx context.Context, msg chat.SendDirectMessageRPC) ([]hexutil.Bytes, error) {
+	if !api.service.pfsEnabled {
+		return nil, ErrPFSNotEnabled
+	}
+	// To be completely agnostic from whisper we should not be using whisper to store the key
+	privateKey, err := api.service.w.GetPrivateKey(msg.Sig)
+	if err != nil {
+		return nil, err
+	}
+
+	msg.PubKey = crypto.FromECDSAPub(&privateKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	protocolMessage, err := api.service.protocol.BuildPairingMessage(privateKey, msg.Payload)
+	if err != nil {
+		return nil, err
+	}
+
+	var response []hexutil.Bytes
+
+	// Enrich with transport layer info
+	whisperMessage := chat.DirectMessageToWhisper(msg, protocolMessage)
+
+	// And dispatch
+	hash, err := api.Post(ctx, whisperMessage)
+	if err != nil {
+		return nil, err
+	}
+	response = append(response, hash)
+
 	return response, nil
 }
 
@@ -303,7 +362,7 @@ func (api *PublicAPI) SendGroupMessage(ctx context.Context, msg chat.SendGroupMe
 	}
 
 	// This is transport layer-agnostic
-	protocolMessages, err := api.service.protocol.BuildDirectMessage(privateKey, keys, msg.Payload)
+	protocolMessages, err := api.service.protocol.BuildDirectMessage(privateKey, msg.Payload, keys...)
 	if err != nil {
 		return nil, err
 	}
@@ -318,10 +377,10 @@ func (api *PublicAPI) SendGroupMessage(ctx context.Context, msg chat.SendGroupMe
 		}
 
 		// Enrich with transport layer info
-		whisperMessage := chat.DirectMessageToWhisper(&directMessage, message)
+		whisperMessage := chat.DirectMessageToWhisper(directMessage, message)
 
 		// And dispatch
-		hash, err := api.Post(ctx, *whisperMessage)
+		hash, err := api.Post(ctx, whisperMessage)
 		if err != nil {
 			return nil, err
 		}
@@ -355,11 +414,9 @@ func (api *PublicAPI) processPFSMessage(msg *whisper.Message) error {
 		}
 	}
 
-	payload, err := api.service.protocol.HandleMessage(privateKey, publicKey, msg.Payload)
+	response, err := api.service.protocol.HandleMessage(privateKey, publicKey, msg.Payload)
 
-	if err != nil {
-		api.log.Error("Failed handling message with error", "err", err)
-	}
+	handler := EnvelopeSignalHandler{}
 
 	// Notify that someone tried to contact us using an invalid bundle
 	if err == chat.ErrSessionNotFound {
@@ -367,14 +424,24 @@ func (api *PublicAPI) processPFSMessage(msg *whisper.Message) error {
 		keyString := fmt.Sprintf("0x%x", crypto.FromECDSAPub(publicKey))
 		handler := EnvelopeSignalHandler{}
 		handler.DecryptMessageFailed(keyString)
+		return nil
+	} else if err != nil {
+		// Ignore errors for now as those might be non-pfs messages
+		api.log.Error("Failed handling message with error", "err", err)
+		return nil
 	}
 
-	// Ignore errors for now
-	if err == nil {
-		msg.Payload = payload
+	// Add unencrypted payload
+	msg.Payload = response.Message
+
+	// Notify of added bundles
+	if response.AddedBundles != nil {
+		for _, bundle := range response.AddedBundles {
+			handler.BundleAdded(bundle[0], bundle[1])
+		}
 	}
+
 	return nil
-
 }
 
 // -----
@@ -413,31 +480,45 @@ func makeEnvelop(
 }
 
 // makePayload makes a specific payload for MailServer to request historic messages.
-func makePayload(r MessagesRequest) []byte {
-	// Payload format:
-	// 4  bytes for lower
-	// 4  bytes for upper
-	// 64 bytes for the bloom filter
-	// 4  bytes for limit
-	// 36 bytes for the cursor. optional.
-	data := make([]byte, 12+whisper.BloomFilterSize)
-
-	// from
-	binary.BigEndian.PutUint32(data, r.From)
-	// to
-	binary.BigEndian.PutUint32(data[4:], r.To)
-	// bloom
-	copy(data[8:], whisper.TopicToBloom(r.Topic))
-	// limit
-	binary.BigEndian.PutUint32(data[8+whisper.BloomFilterSize:], r.Limit)
-
-	// cursor is the key of an envelope in leveldb.
-	// it's 36 bytes. 4 bytes for the timestamp + 32 bytes for the envelope hash
+func makePayload(r MessagesRequest) ([]byte, error) {
 	expectedCursorSize := common.HashLength + 4
-	cursorBytes, err := hex.DecodeString(r.Cursor)
-	if err != nil || len(cursorBytes) != expectedCursorSize {
-		return data
+	cursor, err := hex.DecodeString(r.Cursor)
+	if err != nil || len(cursor) != expectedCursorSize {
+		cursor = nil
 	}
 
-	return append(data, cursorBytes...)
+	payload := MessagesRequestPayload{
+		Lower:  r.From,
+		Upper:  r.To,
+		Bloom:  createBloomFilter(r),
+		Limit:  r.Limit,
+		Cursor: cursor,
+		// Client must tell the MailServer if it supports batch responses.
+		// This can be removed in the future.
+		Batch: true,
+	}
+
+	return rlp.EncodeToBytes(payload)
+}
+
+func createBloomFilter(r MessagesRequest) []byte {
+	if len(r.Topics) > 0 {
+		return topicsToBloom(r.Topics...)
+	}
+
+	return whisper.TopicToBloom(r.Topic)
+}
+
+func topicsToBloom(topics ...whisper.TopicType) []byte {
+	i := new(big.Int)
+	for _, topic := range topics {
+		bloom := whisper.TopicToBloom(topic)
+		i.Or(i, new(big.Int).SetBytes(bloom[:]))
+	}
+
+	combined := make([]byte, whisper.BloomFilterSize)
+	data := i.Bytes()
+	copy(combined[whisper.BloomFilterSize-len(data):], data[:])
+
+	return combined
 }

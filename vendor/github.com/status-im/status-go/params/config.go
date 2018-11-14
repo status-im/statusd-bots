@@ -15,6 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/p2p/discv5"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/status-im/status-go/static"
+	whisper "github.com/status-im/whisper/whisperv6"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
@@ -30,6 +31,12 @@ type LightEthConfig struct {
 
 	// DatabaseCache is memory (in MBs) allocated to internal caching (min 16MB / database forced)
 	DatabaseCache int
+
+	// TrustedNodes is a list of trusted servers
+	TrustedNodes []string
+
+	//MinTrustedFraction is minimum percentage of connected trusted servers to validate header(1-100)
+	MinTrustedFraction int
 }
 
 // ----------
@@ -72,6 +79,10 @@ type WhisperConfig struct {
 
 	// EnableNTPSync enables NTP synchronizations
 	EnableNTPSync bool
+
+	// MaxMessageSize is a maximum size of a devp2p packet handled by the Whisper protocol,
+	// not only the size of envelopes sent in that packet.
+	MaxMessageSize uint32
 }
 
 // String dumps config object as nicely indented JSON
@@ -212,6 +223,20 @@ type NodeConfig struct {
 	// HTTPPort is the TCP port number on which to start the Geth's HTTP RPC server.
 	HTTPPort int
 
+	// HTTPVirtualHosts is the list of virtual hostnames which are allowed on incoming requests.
+	// This is by default {'localhost'}. Using this prevents attacks like
+	// DNS rebinding, which bypasses SOP by simply masquerading as being within the same
+	// origin. These attacks do not utilize CORS, since they are not cross-domain.
+	// By explicitly checking the Host-header, the server will not allow requests
+	// made against the server with a malicious host domain.
+	// Requests using an IP address directly are not affected.
+	HTTPVirtualHosts []string
+
+	// HTTPCors is the Cross-Origin Resource Sharing header to send to requesting
+	// clients. Please be aware that CORS is a browser enforced security, it's fully
+	// useless for custom HTTP clients.
+	HTTPCors []string
+
 	// IPCEnabled specifies whether IPC-RPC Server is enabled or not
 	IPCEnabled bool
 
@@ -290,6 +315,7 @@ func WithFleet(fleet string) Option {
 		if fleet == FleetUndefined {
 			return nil
 		}
+		c.NoDiscovery = false
 		c.ClusterConfig.Enabled = true
 		return loadConfigFromAsset(fmt.Sprintf("../config/cli/fleet-%s.json", fleet), c)
 	}
@@ -317,7 +343,7 @@ func NewNodeConfigWithDefaults(dataDir string, networkID uint64, opts ...Option)
 		return nil, err
 	}
 
-	c.NoDiscovery = false
+	c.NoDiscovery = true
 	c.HTTPHost = ""
 	c.ListenAddr = ":30303"
 	c.LogEnabled = true
@@ -399,6 +425,7 @@ func NewNodeConfig(dataDir string, networkID uint64) (*NodeConfig, error) {
 		Version:               Version,
 		HTTPHost:              "localhost",
 		HTTPPort:              8545,
+		HTTPVirtualHosts:      []string{"localhost"},
 		ListenAddr:            ":0",
 		APIModules:            "eth,net,web3,peer",
 		MaxPeers:              25,
@@ -415,9 +442,10 @@ func NewNodeConfig(dataDir string, networkID uint64) (*NodeConfig, error) {
 			DatabaseCache: 16,
 		},
 		WhisperConfig: WhisperConfig{
-			DataDir:    wnodeDir,
-			MinimumPoW: WhisperMinimumPoW,
-			TTL:        WhisperTTL,
+			DataDir:        wnodeDir,
+			MinimumPoW:     WhisperMinimumPoW,
+			TTL:            WhisperTTL,
+			MaxMessageSize: whisper.DefaultMaxMessageSize,
 		},
 		SwarmConfig:    SwarmConfig{},
 		RegisterTopics: []discv5.Topic{},

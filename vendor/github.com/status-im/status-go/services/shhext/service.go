@@ -38,7 +38,7 @@ const (
 type EnvelopeEventsHandler interface {
 	EnvelopeSent(common.Hash)
 	EnvelopeExpired(common.Hash)
-	MailServerRequestCompleted(common.Hash, common.Hash, []byte)
+	MailServerRequestCompleted(common.Hash, common.Hash, []byte, error)
 	MailServerRequestExpired(common.Hash)
 }
 
@@ -106,9 +106,9 @@ func (s *Service) InitProtocol(address string, password string) error {
 	return nil
 }
 
-func (s *Service) ProcessPublicBundle(myIdentityKey *ecdsa.PrivateKey, bundle *chat.Bundle) error {
+func (s *Service) ProcessPublicBundle(myIdentityKey *ecdsa.PrivateKey, bundle *chat.Bundle) ([]chat.IdentityAndIDPair, error) {
 	if s.protocol == nil {
-		return errProtocolNotInitialized
+		return nil, errProtocolNotInitialized
 	}
 
 	return s.protocol.ProcessPublicBundle(myIdentityKey, bundle)
@@ -120,6 +120,24 @@ func (s *Service) GetBundle(myIdentityKey *ecdsa.PrivateKey) (*chat.Bundle, erro
 	}
 
 	return s.protocol.GetBundle(myIdentityKey)
+}
+
+// EnableInstallation enables an installation for multi-device sync.
+func (s *Service) EnableInstallation(myIdentityKey *ecdsa.PublicKey, installationID string) error {
+	if s.protocol == nil {
+		return errProtocolNotInitialized
+	}
+
+	return s.protocol.EnableInstallation(myIdentityKey, installationID)
+}
+
+// DisableInstallation disables an installation for multi-device sync.
+func (s *Service) DisableInstallation(myIdentityKey *ecdsa.PublicKey, installationID string) error {
+	if s.protocol == nil {
+		return errProtocolNotInitialized
+	}
+
+	return s.protocol.DisableInstallation(myIdentityKey, installationID)
 }
 
 // APIs returns a list of new APIs.
@@ -291,7 +309,7 @@ func (t *tracker) handleEventMailServerRequestCompleted(event whisper.EnvelopeEv
 	delete(t.cache, event.Hash)
 	if t.handler != nil {
 		if resp, ok := event.Data.(*whisper.MailServerResponse); ok {
-			t.handler.MailServerRequestCompleted(event.Hash, resp.LastEnvelopeHash, resp.Cursor)
+			t.handler.MailServerRequestCompleted(event.Hash, resp.LastEnvelopeHash, resp.Cursor, resp.Error)
 		}
 	}
 }

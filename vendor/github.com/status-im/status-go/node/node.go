@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"time"
 
@@ -17,8 +16,8 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/node"
 	"github.com/ethereum/go-ethereum/p2p"
-	"github.com/ethereum/go-ethereum/p2p/discover"
 	"github.com/ethereum/go-ethereum/p2p/discv5"
+	"github.com/ethereum/go-ethereum/p2p/enode"
 	"github.com/ethereum/go-ethereum/p2p/nat"
 	"github.com/status-im/status-go/mailserver"
 	"github.com/status-im/status-go/params"
@@ -128,15 +127,23 @@ func newGethNodeConfig(config *params.NodeConfig) (*node.Config, error) {
 			MaxPeers:        config.MaxPeers,
 			MaxPendingPeers: config.MaxPendingPeers,
 		},
-		IPCPath:          makeIPCPath(config),
-		HTTPCors:         nil,
-		HTTPModules:      config.FormatAPIModules(),
-		HTTPVirtualHosts: []string{"localhost"},
+		HTTPModules: config.FormatAPIModules(),
+	}
+
+	if config.IPCEnabled {
+		// use well-known defaults
+		if config.IPCFile == "" {
+			config.IPCFile = "geth.ipc"
+		}
+
+		nc.IPCPath = config.IPCFile
 	}
 
 	if config.HTTPEnabled {
 		nc.HTTPHost = config.HTTPHost
 		nc.HTTPPort = config.HTTPPort
+		nc.HTTPVirtualHosts = config.HTTPVirtualHosts
+		nc.HTTPCors = config.HTTPCors
 	}
 
 	if config.ClusterConfig.Enabled {
@@ -211,6 +218,10 @@ func activateLightEthService(stack *node.Node, config *params.NodeConfig) error 
 	ethConf.SyncMode = downloader.LightSync
 	ethConf.NetworkId = config.NetworkID
 	ethConf.DatabaseCache = config.LightEthConfig.DatabaseCache
+	ethConf.ULC = &eth.ULCConfig{
+		TrustedServers:     config.LightEthConfig.TrustedNodes,
+		MinTrustedFraction: config.LightEthConfig.MinTrustedFraction,
+	}
 	return stack.Register(func(ctx *node.ServiceContext) (node.Service, error) {
 		return les.New(ctx, &ethConf)
 	})
@@ -270,7 +281,14 @@ func activateShhService(stack *node.Node, config *params.NodeConfig, db *leveldb
 	err = stack.Register(func(ctx *node.ServiceContext) (node.Service, error) {
 		whisperServiceConfig := &whisper.Config{
 			MaxMessageSize:     whisper.DefaultMaxMessageSize,
-			MinimumAcceptedPOW: 0.001,
+			MinimumAcceptedPOW: params.WhisperMinimumPoW,
+		}
+
+		if config.WhisperConfig.MaxMessageSize > 0 {
+			whisperServiceConfig.MaxMessageSize = config.WhisperConfig.MaxMessageSize
+		}
+		if config.WhisperConfig.MinimumPoW > 0 {
+			whisperServiceConfig.MinimumAcceptedPOW = config.WhisperConfig.MinimumPoW
 		}
 
 		whisperService := whisper.New(whisperServiceConfig)
@@ -322,24 +340,15 @@ func activateShhService(stack *node.Node, config *params.NodeConfig, db *leveldb
 	})
 }
 
-// makeIPCPath returns IPC-RPC filename
-func makeIPCPath(config *params.NodeConfig) string {
-	if !config.IPCEnabled {
-		return ""
-	}
-
-	return path.Join(config.DataDir, config.IPCFile)
-}
-
-// parseNodes creates list of discover.Node out of enode strings.
-func parseNodes(enodes []string) []*discover.Node {
-	var nodes []*discover.Node
-	for _, enode := range enodes {
-		parsedPeer, err := discover.ParseNode(enode)
+// parseNodes creates list of enode.Node out of enode strings.
+func parseNodes(enodes []string) []*enode.Node {
+	var nodes []*enode.Node
+	for _, item := range enodes {
+		parsedPeer, err := enode.ParseV4(item)
 		if err == nil {
 			nodes = append(nodes, parsedPeer)
 		} else {
-			logger.Error("Failed to parse enode", "enode", enode, "err", err)
+			logger.Error("Failed to parse enode", "enode", item, "err", err)
 		}
 
 	}
@@ -361,10 +370,10 @@ func parseNodesV5(enodes []string) []*discv5.Node {
 	return nodes
 }
 
-func parseNodesToNodeID(enodes []string) []discover.NodeID {
-	nodeIDs := make([]discover.NodeID, 0, len(enodes))
+func parseNodesToNodeID(enodes []string) []enode.ID {
+	nodeIDs := make([]enode.ID, 0, len(enodes))
 	for _, node := range parseNodes(enodes) {
-		nodeIDs = append(nodeIDs, node.ID)
+		nodeIDs = append(nodeIDs, node.ID())
 	}
 	return nodeIDs
 }
