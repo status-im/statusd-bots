@@ -90,14 +90,13 @@ func main() {
 		log.Printf("using node config: %v", nodeConfig)
 
 		work := NewWorkUnit(enode, &nodeConfig)
-		workUnites = append(workUnites, work)
-
 		go func(work *WorkUnit) {
 			if err := work.Execute(workConfig, mailSignalsForwarder); err != nil {
 				log.Fatalf("failed to execute work: %v", err)
 			}
 			wg.Done()
 		}(work)
+		workUnites = append(workUnites, work)
 	}
 
 	wg.Wait()
@@ -232,7 +231,11 @@ func filterMailTypesHandler(fn func(string), in chan<- mailTypeSignal) func(stri
 			if err := json.Unmarshal(envelope.Event, &event); err != nil {
 				log.Fatalf("faild to unmarshal signal event: %v", err)
 			}
-			in <- mailTypeSignal{envelope.Type, hex.EncodeToString(event.Hash.Bytes()), nil}
+			in <- mailTypeSignal{
+				envelope.Type,
+				hex.EncodeToString(event.Hash.Bytes()),
+				nil,
+			}
 		}
 	}
 }

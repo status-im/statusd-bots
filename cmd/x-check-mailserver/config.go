@@ -5,7 +5,7 @@ import (
 )
 
 func newNodeConfig(fleet string, networkID uint64) (*params.NodeConfig, error) {
-	c, err := params.NewNodeConfig(*datadir, networkID)
+	c, err := params.NewNodeConfig("", networkID)
 	if err != nil {
 		return nil, err
 	}

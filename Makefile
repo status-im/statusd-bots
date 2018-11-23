@@ -4,9 +4,7 @@ dependencies:
 	dep ensure
 
 image: AUTHOR = $(shell echo $$USER)
-image: GIT_COMMIT = $(shell tag=`git describe --exact-match --tag 2>/dev/null`; \
-	if [ $$? -eq 0 ]; then echo $$tag | sed 's/^v\(.*\)$$/\1/'; \
-	else git rev-parse --short HEAD; fi)
+image: GIT_COMMIT = $(shell git rev-parse --short HEAD)
 image:
 	docker build . \
 		--label "commit=$(GIT_COMMIT)" \
@@ -17,3 +15,4 @@ image:
 build:
 	go build -o ./bin/pubchats ./cmd/pubchats
 	go build -o ./bin/bench-mailserver ./cmd/bench-mailserver
+	go build -o ./bin/x-check-mailserver ./cmd/x-check-mailserver
