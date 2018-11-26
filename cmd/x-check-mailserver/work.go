@@ -40,9 +40,9 @@ func NewWorkUnit(mailEnode string, config *params.NodeConfig) *WorkUnit {
 
 // WorkUnitConfig configures the execution of the work.
 type WorkUnitConfig struct {
-	From    uint32
-	To      uint32
-	Channel string
+	From     uint32
+	To       uint32
+	Channels []string
 }
 
 // Execute runs the work.
@@ -55,11 +55,6 @@ func (u *WorkUnit) Execute(config WorkUnitConfig, mailSignals *signalForwarder) 
 		return fmt.Errorf("failed to add peer: %v", err)
 	}
 
-	symKeyID, err := addPublicChatSymKey(u.shh, config.Channel)
-	if err != nil {
-		return fmt.Errorf("failed to add sym key for channel '%s': %v", config.Channel, err)
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	mailServerSymKeyID, err := u.shh.GenerateSymmetricKeyFromPassword(
@@ -68,17 +63,31 @@ func (u *WorkUnit) Execute(config WorkUnitConfig, mailSignals *signalForwarder) 
 		return fmt.Errorf("failed to generate sym key for mail server: %v", err)
 	}
 
-	topic, err := protocol.PublicChatTopic([]byte(config.Channel))
-	if err != nil {
-		return fmt.Errorf("failed to create topic: %v", err)
+	var topics []whisper.TopicType
+	for _, ch := range config.Channels {
+		topic, err := protocol.PublicChatTopic([]byte(ch))
+		if err != nil {
+			return fmt.Errorf("failed to create topic: %v", err)
+		}
+		topics = append(topics, topic)
 	}
 
+	var messageSubErrs []<-chan error
 	messages := make(chan *whisper.Message)
-	sub, err := subscribeMessages(u.shh, config.Channel, symKeyID, messages)
-	if err != nil {
-		return fmt.Errorf("failed to subscribe for messages: %v", err)
+
+	for _, ch := range config.Channels {
+		symKeyID, err := addPublicChatSymKey(u.shh, ch)
+		if err != nil {
+			return fmt.Errorf("failed to add sym key for channel '%s': %v", ch, err)
+		}
+
+		sub, err := subscribeMessages(u.shh, ch, symKeyID, messages)
+		if err != nil {
+			return fmt.Errorf("failed to subscribe for messages: %v", err)
+		}
+		defer sub.Unsubscribe()
+		messageSubErrs = append(messageSubErrs, sub.Err())
 	}
-	defer sub.Unsubscribe()
 
 	reqID, err := u.shhextAPI.RequestMessages(nil, shhext.MessagesRequest{
 		MailServerPeer: u.MailServerEnode,
@@ -86,7 +95,7 @@ func (u *WorkUnit) Execute(config WorkUnitConfig, mailSignals *signalForwarder) 
 		From:           config.From,
 		To:             config.To,
 		Limit:          1000,
-		Topic:          topic,
+		Topics:         topics,
 		Timeout:        30,
 	})
 	if err != nil {
@@ -118,7 +127,7 @@ func (u *WorkUnit) Execute(config WorkUnitConfig, mailSignals *signalForwarder) 
 				}
 			}
 			return fmt.Errorf("did not receive lastEnvelopeID: %s", hex.EncodeToString(lastEnvelopeID))
-		case err := <-sub.Err():
+		case err := <-merge(messageSubErrs...):
 			return fmt.Errorf("subscription for messages errored: %v", err)
 		case s := <-signals:
 			switch s.Type {
