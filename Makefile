@@ -12,7 +12,11 @@ image:
 		-t $(DOCKER_IMAGE):$(GIT_COMMIT) \
 		-t $(DOCKER_IMAGE):latest
 
-build:
+build: bin/pubchats bin/bench-mailserver bin/x-check-mailserver
+
+bin/pubchats:
 	go build -o ./bin/pubchats ./cmd/pubchats
+bin/bench-mailserver:
 	go build -o ./bin/bench-mailserver ./cmd/bench-mailserver
+bin/x-check-mailserver:
 	go build -o ./bin/x-check-mailserver ./cmd/x-check-mailserver
