@@ -15,6 +15,10 @@ $ make dependencies
 
 This project uses [`github.com/ethereum/go-ethereum`](https://github.com/ethereum/go-ethereum) as a dependency but its source is changed to Status' fork [status-im/go-ethereum](https://github.com/status-im/go-ethereum) which include patches required by another dependency [`github.com/status-im/status-go`](https://github.com/status-im/status-go).
 
+### Cross-compilation
+
+Cross-compilation is not provided, unforunately. Although, go-ethereum provides non-CGO support, it's not recommended.
+
 ## Bots
 
 ### pubchats
