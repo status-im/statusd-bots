@@ -157,8 +157,6 @@
     "rlp",
     "rpc",
     "trie",
-    "whisper/shhclient",
-    "whisper/whisperv6",
   ]
   pruneopts = "T"
   revision = "2ad6673303bb48f8e3c2865386cfa928e92dbcbd"
@@ -870,6 +868,14 @@
   revision = "4dcb6cba284ae9f97129e2a98b9277f629d9dbc4"
 
 [[projects]]
+  digest = "1:bc239a012dbb8f5d9da175f4aad2a292d621d7917b4e393a96861f9599640d09"
+  name = "github.com/status-im/go-ethereum"
+  packages = ["common"]
+  pruneopts = "UT"
+  revision = "2ad6673303bb48f8e3c2865386cfa928e92dbcbd"
+  version = "v1.8.17"
+
+[[projects]]
   branch = "master"
   digest = "1:e8f4efd87b91ee8464ea426b62802c71698025fbda83be5efefd3bc663605d95"
   name = "github.com/status-im/go-multiaddr-ethv4"
@@ -1163,11 +1169,10 @@
     "github.com/ethereum/go-ethereum/crypto/sha3",
     "github.com/ethereum/go-ethereum/p2p",
     "github.com/ethereum/go-ethereum/p2p/discv5",
-    "github.com/ethereum/go-ethereum/whisper/shhclient",
-    "github.com/ethereum/go-ethereum/whisper/whisperv6",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",
     "github.com/spf13/pflag",
+    "github.com/status-im/go-ethereum/common",
     "github.com/status-im/status-go/logutils",
     "github.com/status-im/status-go/node",
     "github.com/status-im/status-go/params",
