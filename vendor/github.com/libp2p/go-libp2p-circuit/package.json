@@ -8,39 +8,39 @@
   },
   "gxDependencies": [
     {
-      "hash": "QmRREK2CAZ5Re2Bd9zZFG6FeYDppUWt5cMgsoUEp3ktgSr",
+      "hash": "QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae",
       "name": "go-log",
-      "version": "1.5.5"
+      "version": "1.5.7"
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmfH9FKYv3Jp1xiyL8sPchGBUBg6JA6XviwajAo3qgnT3B",
+      "hash": "QmeA5hsqgLryvkeyqeQdvGDqurLkYi3XEPLZP3pzuBJXh2",
       "name": "go-libp2p-host",
-      "version": "3.0.8"
+      "version": "3.0.10"
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmQSbtGXCyNrj34LWL8EgXyNNYDZ8r3SwQcpW5pPxVhLnM",
+      "hash": "QmfDPh144WGBqRxZb1TGDHerbMnZATrHZggAPw7putNnBq",
       "name": "go-libp2p-net",
-      "version": "3.0.8"
+      "version": "3.0.10"
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmQsErDt8Qgw1XrsXf2BpEzDgGWtB1YLsTAARBup5b6B9W",
+      "hash": "QmbNepETomvmXfz1X5pHNFD2QuPqnqi47dTd94QJWSorQ3",
       "name": "go-libp2p-peer",
-      "version": "2.3.7"
+      "version": "2.3.8"
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmeKD8YT7887Xu6Z86iZmpYNxrLogJexqxEugSmaf14k64",
+      "hash": "QmfAQMFpgDU2U4BXG64qVr8HSiictfWvkSBz7Y2oDj65st",
       "name": "go-libp2p-peerstore",
-      "version": "1.4.24"
+      "version": "2.0.1"
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmcDUyb52N62J8ZamGgUWUyWc1MtuCBce7WFA4D9xA6cwF",
+      "hash": "QmUFARWmz7LKUCzoWn1M3Z4Q2F8NK319452CBVFu4AgwzL",
       "name": "go-libp2p-transport",
-      "version": "3.0.8"
+      "version": "3.0.10"
     },
     {
       "author": "multiformats",
@@ -62,21 +62,21 @@
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmeKQeTT46oH3ezWeNLLaa8RtFbvijmxtyRiRuQD5wASDk",
+      "hash": "QmPBiDDeTyHpKypigUYcGivr6Lvo9GjoA7HeAGjoMyKHUK",
       "name": "go-libp2p-blankhost",
-      "version": "0.3.8"
+      "version": "0.3.10"
     },
     {
       "author": "whyrusleeping",
-      "hash": "Qmcc5CPuKyfDZNmqXNkk6j23CyZqZGypUv952NLHYGbeni",
+      "hash": "QmPQoCVRHaGD25VffyB7DFV5qP65hFSQJdSDy75P1vYBKe",
       "name": "go-libp2p-swarm",
-      "version": "3.0.10"
+      "version": "3.0.12"
     },
     {
       "author": "steb",
-      "hash": "QmefQrpDSYX6jQRtUyhcASFVBDkoAsDTPXemyxGMzA3phK",
+      "hash": "QmNRRKZjRHJTuEvbAkkmJLpBQX9FZ7rAXdD8zuknZv6mmF",
       "name": "go-libp2p-transport-upgrader",
-      "version": "0.1.8"
+      "version": "0.1.10"
     }
   ],
   "gxVersion": "0.11.0",
@@ -84,6 +84,6 @@
   "license": "MIT",
   "name": "go-libp2p-circuit",
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
-  "version": "2.1.11"
+  "version": "2.2.2"
 }
 

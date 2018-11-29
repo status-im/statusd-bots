@@ -56,3 +56,19 @@
 [[override]]
   name = "github.com/satori/go.uuid"
   revision = "36e9d2ebbde5e3f13ab2e25625fd453271d6522e"
+
+[[override]]
+  name = "github.com/multiformats/go-multiaddr"
+  revision = "f36800afeb9c141e1adb7da099e6f010dfd4c419"
+
+[[override]]
+  name = "github.com/multiformats/go-multiaddr-dns"
+  revision = "4c36f46414bba59a19ffe5154841f76d4a55b780"
+
+[[override]]
+  name = "github.com/libp2p/go-libp2p-circuit"
+  revision = "eca2b86a1bcf00adba4f71b3654c3898b19ef421"
+
+[[override]]
+  name = "github.com/libp2p/go-libp2p-peerstore"
+  revision = "b1e626f38de4d5f3b8c292f230f8b9f03889ae65"

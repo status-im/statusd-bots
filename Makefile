@@ -20,3 +20,6 @@ bin/bench-mailserver:
 	go build -o ./bin/bench-mailserver ./cmd/bench-mailserver
 bin/x-check-mailserver:
 	go build -o ./bin/x-check-mailserver ./cmd/x-check-mailserver
+
+clean:
+	rm bin/*

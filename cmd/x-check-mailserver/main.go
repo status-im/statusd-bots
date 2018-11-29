@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
-	"log"
+	stdlog "log"
 	"math/rand"
 	"os"
 	stdsignal "os/signal"
@@ -15,7 +15,8 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum"
-	"github.com/status-im/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/status-im/status-go/logutils"
 	"github.com/status-im/status-go/params"
 	"github.com/status-im/status-go/signal"
@@ -26,7 +27,7 @@ import (
 
 func init() {
 	if err := logutils.OverrideRootLog(true, *verbosity, "", false); err != nil {
-		log.Fatalf("failed to override root log: %v\n", err)
+		stdlog.Fatalf("failed to override root log: %v\n", err)
 	}
 }
 
@@ -43,7 +44,7 @@ func main() {
 	// create config
 	config, err := newNodeConfig(*fleet, params.MainNetworkID)
 	if err != nil {
-		log.Fatalf("failed to create a config: %v", err)
+		log.Crit("failed to create a config", "err", err)
 	}
 
 	// collect mail servers
@@ -83,16 +84,16 @@ func main() {
 		config.ListenAddr = "127.0.0.1:" + strconv.Itoa(44300+i)
 		config.DataDir, err = ioutil.TempDir("", "")
 		if err != nil {
-			log.Fatalf("failed to create temp dir: %v", err)
+			log.Crit("failed to create temp dir", "err", err)
 		}
 
 		nodeConfig := *config
-		log.Printf("using node config: %v", nodeConfig)
+		log.Debug("using node config", "config", nodeConfig)
 
 		work := NewWorkUnit(enode, &nodeConfig)
 		go func(work *WorkUnit) {
 			if err := work.Execute(workConfig, mailSignalsForwarder); err != nil {
-				log.Fatalf("failed to execute work: %v", err)
+				log.Crit("failed to execute work", "err", err)
 			}
 			wg.Done()
 		}(work)
@@ -111,8 +112,11 @@ func main() {
 			exitCode = 1
 		}
 
-		log.Printf("%s vs %s: ", workA.MailServerEnode, workB.MailServerEnode)
-		log.Printf("    messages: %d vs %d", len(workA.Messages), len(workB.Messages))
+		log.Info("MailServer A vs MailServer B",
+			"A", workA.MailServerEnode,
+			"messagesCountA", len(workA.Messages),
+			"B", workB.MailServerEnode,
+			"messagesCountB", len(workB.Messages))
 	}
 
 	os.Exit(exitCode)
@@ -142,7 +146,7 @@ func subscribeMessages(c *shhclient.Client, chat, symKeyID string, messages chan
 }
 
 func printHandler(event string) {
-	log.Printf("received signal: %v\n", event)
+	log.Debug("received signal", "event", event)
 }
 
 type signalEnvelope struct {
@@ -212,14 +216,14 @@ func filterMailTypesHandler(fn func(string), in chan<- mailTypeSignal) func(stri
 
 		var envelope signalEnvelope
 		if err := json.Unmarshal([]byte(event), &envelope); err != nil {
-			log.Fatalf("faild to unmarshal signal Envelope: %v", err)
+			log.Crit("faild to unmarshal signal Envelope", "err", err)
 		}
 
 		switch envelope.Type {
 		case signal.EventMailServerRequestCompleted:
 			var event mailTypeEvent
 			if err := json.Unmarshal(envelope.Event, &event); err != nil {
-				log.Fatalf("faild to unmarshal signal event: %v", err)
+				log.Crit("faild to unmarshal signal event", "event", string(envelope.Event), "err", err)
 			}
 			in <- mailTypeSignal{
 				envelope.Type,
@@ -229,7 +233,7 @@ func filterMailTypesHandler(fn func(string), in chan<- mailTypeSignal) func(stri
 		case signal.EventMailServerRequestExpired:
 			var event mailTypeEvent
 			if err := json.Unmarshal(envelope.Event, &event); err != nil {
-				log.Fatalf("faild to unmarshal signal event: %v", err)
+				log.Crit("faild to unmarshal signal event", "err", err)
 			}
 			in <- mailTypeSignal{
 				envelope.Type,

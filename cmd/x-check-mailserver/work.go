@@ -5,9 +5,9 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"log"
 	"time"
 
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/p2p"
 	"github.com/status-im/status-go/node"
 	"github.com/status-im/status-go/params"
@@ -112,7 +112,7 @@ func (u *WorkUnit) Execute(config WorkUnitConfig, mailSignals *signalForwarder) 
 	for {
 		select {
 		case m := <-messages:
-			log.Printf("received a message %s", hex.EncodeToString(m.Hash))
+			log.Debug("received a message", "hash", hex.EncodeToString(m.Hash))
 			u.Messages = append(u.Messages, m)
 		case <-time.After(time.Second * 5):
 			// As we can not predict when messages finish to come in,
@@ -121,8 +121,10 @@ func (u *WorkUnit) Execute(config WorkUnitConfig, mailSignals *signalForwarder) 
 			// it's a successful request. Otherwise, an error is returned.
 			for i, m := range u.Messages {
 				if bytes.Equal(lastEnvelopeID, m.Hash) {
-					log.Printf("received lastEnvelopeID %s on %d out of %d",
-						hex.EncodeToString(lastEnvelopeID), i, len(u.Messages))
+					log.Debug("received lastEnvelopeID",
+						"hash", hex.EncodeToString(lastEnvelopeID),
+						"index", i,
+						"messagesCount", len(u.Messages))
 					return u.stopNode()
 				}
 			}
