@@ -22,4 +22,4 @@ bin/x-check-mailserver:
 	go build -o ./bin/x-check-mailserver ./cmd/x-check-mailserver
 
 clean:
-	rm bin/*
+	rm -f bin/*
