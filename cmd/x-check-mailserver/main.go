@@ -93,7 +93,7 @@ func main() {
 		work := NewWorkUnit(enode, &nodeConfig)
 		go func(work *WorkUnit) {
 			if err := work.Execute(workConfig, mailSignalsForwarder); err != nil {
-				log.Crit("failed to execute work", "err", err)
+				log.Crit("failed to execute work", "err", err, "enode", work.MailServerEnode)
 			}
 			wg.Done()
 		}(work)

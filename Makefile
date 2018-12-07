@@ -14,11 +14,11 @@ image:
 
 build: bin/pubchats bin/bench-mailserver bin/x-check-mailserver
 
-bin/pubchats:
+pubchats:
 	go build -o ./bin/pubchats ./cmd/pubchats
-bin/bench-mailserver:
+bench-mailserver:
 	go build -o ./bin/bench-mailserver ./cmd/bench-mailserver
-bin/x-check-mailserver:
+x-check-mailserver:
 	go build -o ./bin/x-check-mailserver ./cmd/x-check-mailserver
 
 clean:

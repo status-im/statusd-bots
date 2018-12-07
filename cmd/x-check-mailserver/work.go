@@ -96,7 +96,7 @@ func (u *WorkUnit) Execute(config WorkUnitConfig, mailSignals *signalForwarder) 
 		To:             config.To,
 		Limit:          1000,
 		Topics:         topics,
-		Timeout:        30,
+		Timeout:        15,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to request %s for messages: %v", u.MailServerEnode, err)
@@ -107,6 +107,11 @@ func (u *WorkUnit) Execute(config WorkUnitConfig, mailSignals *signalForwarder) 
 	signals, cancelSignalsFilter := mailSignals.Filter([]byte(reqID))
 	defer cancelSignalsFilter()
 
+	timeout := time.NewTimer(16 * time.Second) // greater than request messages timeout
+	defer timeout.Stop()
+
+	start := time.Now()
+
 	var lastEnvelopeID []byte
 
 	for {
@@ -114,14 +119,14 @@ func (u *WorkUnit) Execute(config WorkUnitConfig, mailSignals *signalForwarder) 
 		case m := <-messages:
 			log.Debug("received a message", "hash", hex.EncodeToString(m.Hash))
 			u.Messages = append(u.Messages, m)
-		case <-time.After(time.Second * 5):
+		case <-timeout.C:
 			// As we can not predict when messages finish to come in,
-			// we timeout after 5 seconds of silence.
+			// we timeout after some time.
 			// If lastEnvelopeID is found amoung received messages,
 			// it's a successful request. Otherwise, an error is returned.
 			for i, m := range u.Messages {
 				if bytes.Equal(lastEnvelopeID, m.Hash) {
-					log.Debug("received lastEnvelopeID",
+					log.Info("received lastEnvelopeID",
 						"hash", hex.EncodeToString(lastEnvelopeID),
 						"index", i,
 						"messagesCount", len(u.Messages))
@@ -135,6 +140,15 @@ func (u *WorkUnit) Execute(config WorkUnitConfig, mailSignals *signalForwarder) 
 			switch s.Type {
 			case signal.EventMailServerRequestCompleted:
 				lastEnvelopeID = s.LastEnvelopeID
+
+				log.Info("received EventMailServerRequestCompleted", "latency", time.Since(start), "enode", u.MailServerEnode)
+
+				// After receiving a request complete event,
+				// we reduce the timeout to 5 seconds.
+				if !timeout.Stop() {
+					<-timeout.C
+				}
+				timeout.Reset(time.Second * 5)
 			case signal.EventMailServerRequestExpired:
 				return fmt.Errorf("request for messages expired")
 			}
