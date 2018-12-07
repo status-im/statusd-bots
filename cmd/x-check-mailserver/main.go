@@ -9,7 +9,6 @@ import (
 	"math/rand"
 	"os"
 	stdsignal "os/signal"
-	"strconv"
 	"sync"
 	"syscall"
 	"time"
@@ -80,8 +79,7 @@ func main() {
 
 	wg.Add(len(mailserversToCheck))
 
-	for i, enode := range mailserversToCheck {
-		config.ListenAddr = "127.0.0.1:" + strconv.Itoa(*port+i)
+	for _, enode := range mailserversToCheck {
 		config.DataDir, err = ioutil.TempDir("", "")
 		if err != nil {
 			log.Crit("failed to create temp dir", "err", err)
