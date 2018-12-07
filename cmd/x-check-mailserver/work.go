@@ -126,14 +126,14 @@ func (u *WorkUnit) Execute(config WorkUnitConfig, mailSignals *signalForwarder) 
 			// it's a successful request. Otherwise, an error is returned.
 			for i, m := range u.Messages {
 				if bytes.Equal(lastEnvelopeID, m.Hash) {
-					log.Info("received lastEnvelopeID",
+					log.Info("received a message equal to lastEnvelopeID",
 						"hash", hex.EncodeToString(lastEnvelopeID),
 						"index", i,
 						"messagesCount", len(u.Messages))
 					return u.stopNode()
 				}
 			}
-			return fmt.Errorf("did not receive lastEnvelopeID: %s", hex.EncodeToString(lastEnvelopeID))
+			return fmt.Errorf("did not receive a message equal to lastEnvelopeID")
 		case err := <-merge(messageSubErrs...):
 			return fmt.Errorf("subscription for messages errored: %v", err)
 		case s := <-signals:
