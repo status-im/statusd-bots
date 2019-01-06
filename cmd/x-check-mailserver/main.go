@@ -9,11 +9,12 @@ import (
 	"math/rand"
 	"os"
 	stdsignal "os/signal"
+	"sort"
 	"sync"
 	"syscall"
 	"time"
 
-	"github.com/ethereum/go-ethereum"
+	ethereum "github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/status-im/status-go/logutils"
@@ -100,13 +101,22 @@ func main() {
 
 	wg.Wait()
 
+	// Sort results in descending order with regards to the number
+	// of returned messages.
+	sort.Slice(workUnites, func(i, j int) bool {
+		return len(workUnites[i].Messages) > len(workUnites[j].Messages)
+	})
+
 	exitCode := 0
+	failedMailServers := make([]string, 0)
 
 	for i, j := 0, 1; j < len(workUnites); j++ {
 		workA := workUnites[i]
 		workB := workUnites[j]
+		areEqual := len(workA.Messages) != len(workB.Messages)
 
-		if len(workA.Messages) != len(workB.Messages) {
+		if !areEqual {
+			failedMailServers = append(failedMailServers, workB.MailServerEnode)
 			exitCode = 1
 		}
 
@@ -115,6 +125,10 @@ func main() {
 			"messagesCountA", len(workA.Messages),
 			"B", workB.MailServerEnode,
 			"messagesCountB", len(workB.Messages))
+	}
+
+	if exitCode != 0 {
+		log.Error("the following mail servers failed to return all messages", "enodes", failedMailServers)
 	}
 
 	os.Exit(exitCode)
