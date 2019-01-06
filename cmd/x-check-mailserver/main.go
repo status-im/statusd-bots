@@ -113,7 +113,7 @@ func main() {
 	for i, j := 0, 1; j < len(workUnites); j++ {
 		workA := workUnites[i]
 		workB := workUnites[j]
-		areEqual := len(workA.Messages) != len(workB.Messages)
+		areEqual := len(workA.Messages) == len(workB.Messages)
 
 		if !areEqual {
 			failedMailServers = append(failedMailServers, workB.MailServerEnode)
