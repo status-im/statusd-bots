@@ -89,6 +89,8 @@ func (u *WorkUnit) Execute(config WorkUnitConfig, mailSignals *signalForwarder) 
 		messageSubErrs = append(messageSubErrs, sub.Err())
 	}
 
+	// TODO: sshext.MessagesRequest expects time.Duration but multiplies it by time.Second
+	reqTimeout := time.Duration(15)
 	reqID, err := u.shhextAPI.RequestMessages(nil, shhext.MessagesRequest{
 		MailServerPeer: u.MailServerEnode,
 		SymKeyID:       mailServerSymKeyID,
@@ -96,7 +98,7 @@ func (u *WorkUnit) Execute(config WorkUnitConfig, mailSignals *signalForwarder) 
 		To:             config.To,
 		Limit:          1000,
 		Topics:         topics,
-		Timeout:        15,
+		Timeout:        reqTimeout,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to request %s for messages: %v", u.MailServerEnode, err)
@@ -107,9 +109,6 @@ func (u *WorkUnit) Execute(config WorkUnitConfig, mailSignals *signalForwarder) 
 	signals, cancelSignalsFilter := mailSignals.Filter([]byte(reqID))
 	defer cancelSignalsFilter()
 
-	timeout := time.NewTimer(16 * time.Second) // greater than request messages timeout
-	defer timeout.Stop()
-
 	start := time.Now()
 
 	var lastEnvelopeID []byte
@@ -119,7 +118,7 @@ func (u *WorkUnit) Execute(config WorkUnitConfig, mailSignals *signalForwarder) 
 		case m := <-messages:
 			log.Debug("received a message", "hash", hex.EncodeToString(m.Hash))
 			u.Messages = append(u.Messages, m)
-		case <-timeout.C:
+		case <-time.After(time.Duration(reqTimeout) * time.Second):
 			// As we can not predict when messages finish to come in,
 			// we timeout after some time.
 			// If lastEnvelopeID is found amoung received messages,
@@ -141,14 +140,12 @@ func (u *WorkUnit) Execute(config WorkUnitConfig, mailSignals *signalForwarder) 
 			case signal.EventMailServerRequestCompleted:
 				lastEnvelopeID = s.LastEnvelopeID
 
-				log.Info("received EventMailServerRequestCompleted", "latency", time.Since(start), "enode", u.MailServerEnode)
+				log.Info("received EventMailServerRequestCompleted", "latency", time.Since(start), "enode", u.MailServerEnode, "lastEnvelopeID", lastEnvelopeID)
 
-				// After receiving a request complete event,
-				// we reduce the timeout to 5 seconds.
-				if !timeout.Stop() {
-					<-timeout.C
+				if allZeros(lastEnvelopeID) {
+					log.Info("lastEnvelopeID is empty so return early")
+					return u.stopNode()
 				}
-				timeout.Reset(time.Second * 5)
 			case signal.EventMailServerRequestExpired:
 				return fmt.Errorf("request for messages expired")
 			}
@@ -192,4 +189,14 @@ func (u *WorkUnit) addPeer() error {
 		p2p.PeerEventTypeAdd,
 		5*time.Second,
 	)
+}
+
+func allZeros(b []byte) bool {
+	zero := byte(0)
+	for _, n := range b {
+		if n != zero {
+			return false
+		}
+	}
+	return true
 }
