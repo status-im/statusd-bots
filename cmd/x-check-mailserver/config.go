@@ -10,7 +10,7 @@ func newNodeConfig(fleet string, networkID uint64) (*params.NodeConfig, error) {
 		return nil, err
 	}
 
-	if err := params.WithFleet(params.FleetBeta)(c); err != nil {
+	if err := params.WithFleet(fleet)(c); err != nil {
 		return nil, err
 	}
 
