@@ -102,7 +102,7 @@ func main() {
 		case msg := <-messages:
 			chatName := topicsToNamesMap[msg.Topic]
 			source := hex.EncodeToString(msg.Sig)
-			log.Printf("received a message: topic=%v (%s) data=%s author=%s", msg.Topic, chatName, msg.Payload, source)
+			//log.Printf("received a message: topic=%v (%s) data=%s author=%s", msg.Topic, chatName, msg.Payload, source)
 			messagesCounter.WithLabelValues(chatName).Inc()
 
 			// detect unique participants per chat

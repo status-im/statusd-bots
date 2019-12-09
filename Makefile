@@ -1,7 +1,7 @@
 DOCKER_IMAGE := statusteam/statusd-bots
 
-dependencies:
-	dep ensure
+deps:
+	go get
 
 image: AUTHOR = $(shell echo $$USER)
 image: GIT_COMMIT = $(shell git rev-parse --short HEAD)
@@ -12,7 +12,7 @@ image:
 		-t $(DOCKER_IMAGE):$(GIT_COMMIT) \
 		-t $(DOCKER_IMAGE):latest
 
-build: bin/pubchats bin/bench-mailserver bin/x-check-mailserver
+build: pubchats bench-mailserver x-check-mailserver
 
 pubchats:
 	go build -o ./bin/pubchats ./cmd/pubchats
