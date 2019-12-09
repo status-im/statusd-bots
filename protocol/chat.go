@@ -3,7 +3,7 @@ package protocol
 import (
 	"golang.org/x/crypto/sha3"
 
-	whisper "github.com/status-im/whisper/whisperv6"
+	"github.com/status-im/status-go/whisper/v6"
 )
 
 const (

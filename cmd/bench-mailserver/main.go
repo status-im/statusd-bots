@@ -22,7 +22,7 @@ import (
 	"github.com/status-im/status-go/t/helpers"
 	"github.com/status-im/statusd-bots/protocol"
 	"github.com/status-im/whisper/shhclient"
-	whisper "github.com/status-im/whisper/whisperv6"
+	"github.com/status-im/status-go/whisper/v6"
 )
 
 var mailSignals = make(chan *signal.Envelope, 1)
