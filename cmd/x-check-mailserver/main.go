@@ -20,13 +20,14 @@ import (
 	"github.com/status-im/status-go/logutils"
 	"github.com/status-im/status-go/params"
 	"github.com/status-im/status-go/signal"
+	"github.com/status-im/status-go/whisper"
+	"github.com/status-im/status-go/whisper/shhclient"
 	"github.com/status-im/statusd-bots/protocol"
-	"github.com/status-im/whisper/shhclient"
-	"github.com/status-im/status-go/whisper/v6"
 )
 
 func init() {
-	if err := logutils.OverrideRootLog(true, *verbosity, "", false); err != nil {
+	fileOpts := logutils.FileOptions{}
+	if err := logutils.OverrideRootLog(true, *verbosity, fileOpts, false); err != nil {
 		stdlog.Fatalf("failed to override root log: %v\n", err)
 	}
 }

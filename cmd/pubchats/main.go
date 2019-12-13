@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"log"
 	"os"
-	"os/signal"
+	ossignal "os/signal"
 	"sync"
 	"syscall"
 	"time"
@@ -14,18 +14,19 @@ import (
 	"github.com/status-im/status-go/logutils"
 	"github.com/status-im/status-go/node"
 	"github.com/status-im/status-go/params"
-	statussignal "github.com/status-im/status-go/signal"
+	"github.com/status-im/status-go/signal"
+	"github.com/status-im/status-go/whisper"
+	"github.com/status-im/status-go/whisper/shhclient"
 	"github.com/status-im/statusd-bots/protocol"
-	"github.com/status-im/whisper/shhclient"
-	"github.com/status-im/status-go/whisper/v6"
 )
 
 func init() {
-	if err := logutils.OverrideRootLog(true, *verbosity, "", false); err != nil {
+	fileOpts := logutils.FileOptions{}
+	if err := logutils.OverrideRootLog(true, *verbosity, fileOpts, false); err != nil {
 		log.Fatalf("failed to override root log: %v\n", err)
 	}
 
-	statussignal.SetDefaultNodeNotificationHandler(func(event string) {
+	signal.SetDefaultNodeNotificationHandler(func(event string) {
 		log.Printf("received signal: %v\n", event)
 	})
 }
@@ -38,7 +39,8 @@ func main() {
 	log.Printf("using config: %v", config)
 
 	n := node.New()
-	if err := n.Start(config); err != nil {
+	accMgr, _ := n.AccountManager()
+	if err := n.Start(config, accMgr); err != nil {
 		log.Fatalf("failed to start a node: %v", err)
 	}
 
@@ -88,7 +90,7 @@ func main() {
 	}
 
 	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+	ossignal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
 	go startMetricsServer(*metricsAddr)
 

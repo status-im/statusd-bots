@@ -633,6 +633,7 @@ github.com/status-im/status-go v0.37.1 h1:LtHvfw9afcRm1xEXpZ03L8SWsqxaKEAaa8V1Sc
 github.com/status-im/status-go v0.37.1/go.mod h1:wWL3YMqSB9Yz8WdcgStKnI2Jr5rfmrdidUHB8Pr+Yso=
 github.com/status-im/status-go v0.37.3 h1:94/bOA8qrEIgWd23mSLN39SwUJwCu2TPQFV2HzSI2ZE=
 github.com/status-im/status-go v0.37.3/go.mod h1:9qHQ2+8NS6ivPJS5YbsI3gWkr0t6DWmJzKnr4M7vudw=
+github.com/status-im/status-go v0.38.0 h1:3toC1ToY48wbRBVt7CMWSSG5FZAcPPMlnt0+G6iCbcE=
 github.com/status-im/status-go/eth-node v0.0.0-20191126161717-86bc127b3d0a h1:QRwA43TvdQCgayhtQnKJkb+poiZHz9z8NMMl0IrVAhQ=
 github.com/status-im/status-go/eth-node v0.0.0-20191126161717-86bc127b3d0a/go.mod h1:i//qqd7GhK1LJhY3FiVvrCjdXBwByo+R78q19P0bdCY=
 github.com/status-im/status-go/eth-node v1.0.0 h1:6q6Xyxsr6TKqaRsX+Pk9GMykGTBNTkbYPoGLF2brmz0=

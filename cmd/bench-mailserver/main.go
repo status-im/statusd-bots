@@ -20,15 +20,16 @@ import (
 	"github.com/status-im/status-go/services/shhext"
 	"github.com/status-im/status-go/signal"
 	"github.com/status-im/status-go/t/helpers"
+	"github.com/status-im/status-go/whisper"
+	"github.com/status-im/status-go/whisper/shhclient"
 	"github.com/status-im/statusd-bots/protocol"
-	"github.com/status-im/whisper/shhclient"
-	"github.com/status-im/status-go/whisper/v6"
 )
 
 var mailSignals = make(chan *signal.Envelope, 1)
 
 func init() {
-	if err := logutils.OverrideRootLog(true, *verbosity, "", false); err != nil {
+	fileOpts := logutils.FileOptions{}
+	if err := logutils.OverrideRootLog(true, *verbosity, fileOpts, false); err != nil {
 		log.Fatalf("failed to override root log: %v\n", err)
 	}
 }
@@ -41,7 +42,8 @@ func main() {
 	log.Printf("using config: %v", config)
 
 	n := node.New()
-	if err := n.Start(config); err != nil {
+	accMgr, _ := n.AccountManager()
+	if err := n.Start(config, accMgr); err != nil {
 		log.Fatalf("failed to start a node: %v", err)
 	}
 
