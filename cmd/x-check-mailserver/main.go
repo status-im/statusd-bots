@@ -20,8 +20,8 @@ import (
 	"github.com/status-im/status-go/logutils"
 	"github.com/status-im/status-go/params"
 	"github.com/status-im/status-go/signal"
-	"github.com/status-im/status-go/whisper"
 	"github.com/status-im/status-go/whisper/shhclient"
+	whisper "github.com/status-im/status-go/whisper/v6"
 	"github.com/status-im/statusd-bots/protocol"
 )
 

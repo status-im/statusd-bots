@@ -14,7 +14,7 @@ import (
 	"github.com/status-im/status-go/services/shhext"
 	"github.com/status-im/status-go/signal"
 	"github.com/status-im/status-go/t/helpers"
-	"github.com/status-im/status-go/whisper"
+	whisper "github.com/status-im/status-go/whisper/v6"
 	"github.com/status-im/statusd-bots/protocol"
 	"github.com/status-im/whisper/shhclient"
 )
