@@ -25,7 +25,6 @@ func newNodeConfig(fleet string, networkID uint64) (*params.NodeConfig, error) {
 	c.ClusterConfig.StaticNodes = nil
 
 	c.WhisperConfig.Enabled = true
-	c.WhisperConfig.EnableNTPSync = true
 
 	return c, nil
 }

@@ -1,33 +1,36 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/hex"
+	"crypto/ecdsa"
 	"fmt"
+	"github.com/status-im/status-go/protocol/sqlite"
 	"time"
 
-	"github.com/ethereum/go-ethereum/log"
+	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/p2p/enode"
+
 	"github.com/ethereum/go-ethereum/p2p"
+	gethbridge "github.com/status-im/status-go/eth-node/bridge/geth"
+	"github.com/status-im/status-go/eth-node/types"
 	"github.com/status-im/status-go/node"
 	"github.com/status-im/status-go/params"
-	"github.com/status-im/status-go/services/shhext"
-	"github.com/status-im/status-go/signal"
+	"github.com/status-im/status-go/protocol"
 	"github.com/status-im/status-go/t/helpers"
-	"github.com/status-im/statusd-bots/protocol"
-	"github.com/status-im/whisper/shhclient"
-	whisper "github.com/status-im/whisper/whisperv6"
 )
 
 // WorkUnit represents a single unit of work.
+// It will make a request for historic messages
+// to a mailserver and collect received envelopes.
 type WorkUnit struct {
 	MailServerEnode string
-	Messages        []*whisper.Message
+	MessageHashes   []types.HexBytes // a list of collected messages.
 
 	config    *params.NodeConfig
 	node      *node.StatusNode
-	shh       *shhclient.Client
-	shhextAPI *shhext.PublicAPI
+	key       *ecdsa.PrivateKey
+	messenger *protocol.Messenger
 }
 
 // NewWorkUnit creates a new WorkUnit instance.
@@ -40,137 +43,67 @@ func NewWorkUnit(mailEnode string, config *params.NodeConfig) *WorkUnit {
 
 // WorkUnitConfig configures the execution of the work.
 type WorkUnitConfig struct {
-	From     uint32
-	To       uint32
-	Channels []string
+	From  uint32
+	To    uint32
+	Chats []string
 }
 
 // Execute runs the work.
-func (u *WorkUnit) Execute(config WorkUnitConfig, mailSignals *signalForwarder) error {
+func (u *WorkUnit) Execute(config WorkUnitConfig) error {
 	if err := u.startNode(); err != nil {
 		return fmt.Errorf("failed to start node: %v", err)
 	}
 
-	if err := u.addPeer(); err != nil {
+	if err := u.startMessenger(); err != nil {
+		return fmt.Errorf("failed to create messenger: %v", err)
+	}
+
+	if err := u.addPeer(u.MailServerEnode); err != nil {
 		return fmt.Errorf("failed to add peer: %v", err)
+	}
+
+	for _, chatName := range config.Chats {
+		chat := protocol.CreatePublicChat(chatName, u.messenger.Timesource())
+		if err := u.messenger.Join(chat); err != nil {
+			return err
+		}
+		if err := u.messenger.SaveChat(&chat); err != nil {
+			return err
+		}
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	mailServerSymKeyID, err := u.shh.GenerateSymmetricKeyFromPassword(
-		ctx, protocol.MailServerPassword)
+	msEnode := enode.MustParse(u.MailServerEnode)
+	_, err := u.messenger.RequestHistoricMessages(ctx, msEnode.ID().Bytes(), config.From, config.To, nil)
 	if err != nil {
-		return fmt.Errorf("failed to generate sym key for mail server: %v", err)
+		return err
 	}
 
-	var topics []whisper.TopicType
-	for _, ch := range config.Channels {
-		topic, err := protocol.PublicChatTopic([]byte(ch))
-		if err != nil {
-			return fmt.Errorf("failed to create topic: %v", err)
-		}
-		topics = append(topics, topic)
-	}
-
-	var messageSubErrs []<-chan error
-	messages := make(chan *whisper.Message)
-
-	for _, ch := range config.Channels {
-		symKeyID, err := addPublicChatSymKey(u.shh, ch)
-		if err != nil {
-			return fmt.Errorf("failed to add sym key for channel '%s': %v", ch, err)
-		}
-
-		sub, err := subscribeMessages(u.shh, ch, symKeyID, messages)
-		if err != nil {
-			return fmt.Errorf("failed to subscribe for messages: %v", err)
-		}
-		defer sub.Unsubscribe()
-		messageSubErrs = append(messageSubErrs, sub.Err())
-	}
-
-	// TODO: sshext.MessagesRequest expects time.Duration but multiplies it by time.Second
-	reqTimeout := time.Duration(15)
-	reqID, err := u.shhextAPI.RequestMessages(nil, shhext.MessagesRequest{
-		MailServerPeer: u.MailServerEnode,
-		SymKeyID:       mailServerSymKeyID,
-		From:           config.From,
-		To:             config.To,
-		Limit:          1000,
-		Topics:         topics,
-		Timeout:        reqTimeout,
-	})
+	<-time.After(time.Second) // wait for the Whisper loop to turn (whisper loop turns every 300ms)
+	resp, err := u.messenger.RetrieveAll()
 	if err != nil {
-		return fmt.Errorf("failed to request %s for messages: %v", u.MailServerEnode, err)
+		return err
 	}
 
-	// TODO(adam): change to regular fanout. It might happen that a signal
-	// is received before the filter is setup.
-	signals, cancelSignalsFilter := mailSignals.Filter([]byte(reqID))
-	defer cancelSignalsFilter()
+	for _, m := range resp.Messages {
+		u.MessageHashes = append(u.MessageHashes, types.FromHex(m.ID))
+	}
 
-	start := time.Now()
-
-	var lastEnvelopeID []byte
-
-	for {
-		select {
-		case m := <-messages:
-			log.Debug("received a message", "hash", hex.EncodeToString(m.Hash))
-			u.Messages = append(u.Messages, m)
-		case <-time.After(time.Duration(reqTimeout) * time.Second):
-			// As we can not predict when messages finish to come in,
-			// we timeout after some time.
-			// If lastEnvelopeID is found amoung received messages,
-			// it's a successful request. Otherwise, an error is returned.
-			for i, m := range u.Messages {
-				if bytes.Equal(lastEnvelopeID, m.Hash) {
-					log.Info("received a message equal to lastEnvelopeID",
-						"hash", hex.EncodeToString(lastEnvelopeID),
-						"index", i,
-						"messagesCount", len(u.Messages))
-					return u.stopNode()
-				}
-			}
-			return fmt.Errorf("did not receive a message equal to lastEnvelopeID")
-		case err := <-merge(messageSubErrs...):
-			return fmt.Errorf("subscription for messages errored: %v", err)
-		case s := <-signals:
-			switch s.Type {
-			case signal.EventMailServerRequestCompleted:
-				lastEnvelopeID = s.LastEnvelopeID
-
-				log.Info("received EventMailServerRequestCompleted", "latency", time.Since(start), "enode", u.MailServerEnode, "lastEnvelopeID", lastEnvelopeID)
-
-				if allZeros(lastEnvelopeID) {
-					log.Info("lastEnvelopeID is empty so return early")
-					return u.stopNode()
-				}
-			case signal.EventMailServerRequestExpired:
-				return fmt.Errorf("request for messages expired")
-			}
+	for _, rawResp := range resp.RawMessages {
+		for _, m := range rawResp.Messages {
+			u.MessageHashes = append(u.MessageHashes, m.ID)
 		}
 	}
+
+	return nil
 }
 
 func (u *WorkUnit) startNode() error {
 	u.node = node.New()
-	if err := u.node.Start(u.config); err != nil {
+	if err := u.node.Start(u.config, &accounts.Manager{}); err != nil {
 		return fmt.Errorf("failed to start a node: %v", err)
 	}
-
-	rpcClient, err := u.node.GethNode().Attach()
-	if err != nil {
-		return fmt.Errorf("failed to get an rpc: %v", err)
-	}
-	u.shh = shhclient.NewClient(rpcClient)
-
-	shhextService, err := u.node.ShhExtService()
-	if err != nil {
-		return fmt.Errorf("failed go get an shhext service: %v", err)
-	}
-	u.shhextAPI = shhext.NewPublicAPI(shhextService)
-
 	return nil
 }
 
@@ -178,25 +111,37 @@ func (u *WorkUnit) stopNode() error {
 	return u.node.Stop()
 }
 
-func (u *WorkUnit) addPeer() error {
-	if err := u.node.AddPeer(u.MailServerEnode); err != nil {
+func (u *WorkUnit) startMessenger() error {
+	key, err := crypto.GenerateKey()
+	if err != nil {
+		return err
+	}
+	u.key = key
+	node := gethbridge.NewNodeBridge(u.node.GethNode())
+	db, err := sqlite.OpenInMemory()
+	if err != nil {
+		return err
+	}
+	messenger, err := protocol.NewMessenger(key, node, "instalation-01", protocol.WithDatabase(db))
+	if err != nil {
+		return err
+	}
+	if err := messenger.Start(); err != nil {
+		return err
+	}
+	u.messenger = messenger
+	return nil
+}
+
+func (u *WorkUnit) addPeer(enodeAddr string) error {
+	if err := u.node.AddPeer(enodeAddr); err != nil {
 		return err
 	}
 
 	return <-helpers.WaitForPeerAsync(
 		u.node.Server(),
-		u.MailServerEnode,
+		enodeAddr,
 		p2p.PeerEventTypeAdd,
 		5*time.Second,
 	)
-}
-
-func allZeros(b []byte) bool {
-	zero := byte(0)
-	for _, n := range b {
-		if n != zero {
-			return false
-		}
-	}
-	return true
 }
