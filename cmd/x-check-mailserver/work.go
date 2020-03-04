@@ -4,19 +4,19 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"github.com/status-im/status-go/protocol/sqlite"
+	"go.uber.org/zap"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/p2p/enode"
-
 	"github.com/ethereum/go-ethereum/p2p"
+	"github.com/ethereum/go-ethereum/p2p/enode"
 	gethbridge "github.com/status-im/status-go/eth-node/bridge/geth"
 	"github.com/status-im/status-go/eth-node/types"
 	"github.com/status-im/status-go/node"
 	"github.com/status-im/status-go/params"
 	"github.com/status-im/status-go/protocol"
+	"github.com/status-im/status-go/protocol/sqlite"
 	"github.com/status-im/status-go/t/helpers"
 )
 
@@ -122,7 +122,15 @@ func (u *WorkUnit) startMessenger() error {
 	if err != nil {
 		return err
 	}
-	messenger, err := protocol.NewMessenger(key, node, "instalation-01", protocol.WithDatabase(db))
+	logger, err := zap.NewProduction()
+	if err != nil {
+		return err
+	}
+	messenger, err := protocol.NewMessenger(
+		key, node, "instalation-01",
+		protocol.WithDatabase(db),
+		protocol.WithCustomLogger(logger),
+	)
 	if err != nil {
 		return err
 	}
