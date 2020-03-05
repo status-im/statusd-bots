@@ -1,8 +1,5 @@
 DOCKER_IMAGE := statusteam/statusd-bots
 
-dependencies:
-	dep ensure
-
 image: AUTHOR = $(shell echo $$USER)
 image: GIT_COMMIT = $(shell git rev-parse --short HEAD)
 image:
