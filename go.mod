@@ -12,4 +12,5 @@ require (
 	github.com/ethereum/go-ethereum v1.9.5
 	github.com/spf13/pflag v1.0.3
 	github.com/status-im/status-go v0.48.2
+	go.uber.org/zap v1.13.0
 )

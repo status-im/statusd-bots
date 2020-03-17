@@ -43,9 +43,9 @@ func NewWorkUnit(mailEnode string, config *params.NodeConfig) *WorkUnit {
 
 // WorkUnitConfig configures the execution of the work.
 type WorkUnitConfig struct {
-	From  uint32
-	To    uint32
-	Chats []string
+	From     uint32
+	To       uint32
+	Channels []string
 }
 
 // Execute runs the work.
@@ -62,7 +62,7 @@ func (u *WorkUnit) Execute(config WorkUnitConfig) error {
 		return fmt.Errorf("failed to add peer: %v", err)
 	}
 
-	for _, chatName := range config.Chats {
+	for _, chatName := range config.Channels {
 		chat := protocol.CreatePublicChat(chatName, u.messenger.Timesource())
 		if err := u.messenger.Join(chat); err != nil {
 			return err

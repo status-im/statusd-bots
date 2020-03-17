@@ -51,9 +51,11 @@ func main() {
 
 	// setup work
 	workConfig := WorkUnitConfig{
-		From:  uint32(time.Now().Add(-*duration).Unix()),
-		To:    uint32(time.Now().Add(-5 * time.Minute).Unix()), // subtract 5 mins to cater for TTL, time skew on devices etc.
-		Chats: *chats,
+		Channels: *channels,
+		// starting time for the envelope query
+		From: uint32(time.Now().Add(-*duration).Unix()),
+		// subtract 5 mins to cater for TTL, time skew on devices etc.
+		To: uint32(time.Now().Add(-5 * time.Minute).Unix()),
 	}
 
 	var (
