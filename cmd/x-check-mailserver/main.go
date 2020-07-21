@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/log"
+	"github.com/ethereum/go-ethereum/p2p/enode"
 	"github.com/status-im/status-go/logutils"
 	"github.com/status-im/status-go/params"
 )
@@ -65,8 +66,9 @@ func main() {
 
 	wg.Add(len(mailserversToCheck))
 
-	for _, enode := range mailserversToCheck {
-		config.DataDir, err = ioutil.TempDir("", "")
+	for _, msEnode := range mailserversToCheck {
+		var nodeId = enode.MustParse(msEnode).ID()
+		config.DataDir, err = ioutil.TempDir(*datadir, nodeId)
 		if err != nil {
 			log.Crit("failed to create temp dir", "err", err)
 		}
@@ -74,7 +76,7 @@ func main() {
 		nodeConfig := *config
 		log.Debug("using node config", "config", nodeConfig)
 
-		work := NewWorkUnit(enode, &nodeConfig)
+		work := NewWorkUnit(msEnode, &nodeConfig)
 		go func(work *WorkUnit) {
 			if err := work.Execute(workConfig); err != nil {
 				log.Crit("failed to execute work", "err", err, "enode", work.MailServerEnode)
