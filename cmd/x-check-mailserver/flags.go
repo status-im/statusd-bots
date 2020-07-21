@@ -10,6 +10,7 @@ import (
 var (
 	fleet       = pflag.StringP("fleet", "f", params.FleetProd, "cluster fleet")
 	datadir     = pflag.StringP("datadir", "d", "/tmp", "home directory for node data")
+	privkey     = pflag.StringP("privkey", "p", "", "private key for connecting to nodes, hexadecimal")
 	mailservers = pflag.StringArrayP("mailservers", "m", nil, "a list of mail servers")
 	duration    = pflag.DurationP("duration", "l", time.Hour*24, "length of time span from now")
 	channels    = pflag.StringArrayP("channels", "c", []string{"status"}, "name of one or more channels")
