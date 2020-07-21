@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"go.uber.org/zap"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts"
@@ -25,6 +26,7 @@ import (
 // to a mailserver and collect received envelopes.
 type WorkUnit struct {
 	MailServerEnode string
+	PrivKey         string
 	MessageHashes   []types.HexBytes // a list of collected messages.
 
 	config    *params.NodeConfig
@@ -34,9 +36,10 @@ type WorkUnit struct {
 }
 
 // NewWorkUnit creates a new WorkUnit instance.
-func NewWorkUnit(mailEnode string, config *params.NodeConfig) *WorkUnit {
+func NewWorkUnit(mailEnode string, config *params.NodeConfig, privKey string) *WorkUnit {
 	return &WorkUnit{
 		MailServerEnode: mailEnode,
+		PrivKey:         privKey,
 		config:          config,
 	}
 }
@@ -99,6 +102,14 @@ func (u *WorkUnit) Execute(config WorkUnitConfig) error {
 	return nil
 }
 
+func (u *WorkUnit) generateKey() (*ecdsa.PrivateKey, error) {
+	if u.PrivKey != "" {
+		return crypto.HexToECDSA(strings.TrimPrefix(u.PrivKey, "0x"))
+	} else {
+		return crypto.GenerateKey()
+	}
+}
+
 func (u *WorkUnit) startNode() error {
 	u.node = node.New()
 	if err := u.node.Start(u.config, &accounts.Manager{}); err != nil {
@@ -112,7 +123,7 @@ func (u *WorkUnit) stopNode() error {
 }
 
 func (u *WorkUnit) startMessenger() error {
-	key, err := crypto.GenerateKey()
+	key, err := u.generateKey()
 	if err != nil {
 		return err
 	}

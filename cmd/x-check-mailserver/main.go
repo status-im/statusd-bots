@@ -34,7 +34,7 @@ func main() {
 	}()
 
 	// create config
-	config, err := newNodeConfig(*fleet, params.MainNetworkID)
+	config, err := newNodeConfig(*fleet, params.MainNetworkID, *privkey)
 	if err != nil {
 		log.Crit("failed to create a config", "err", err)
 	}
@@ -76,7 +76,7 @@ func main() {
 		nodeConfig := *config
 		log.Debug("using node config", "config", nodeConfig)
 
-		work := NewWorkUnit(msEnode, &nodeConfig)
+		work := NewWorkUnit(msEnode, &nodeConfig, *privkey)
 		go func(work *WorkUnit) {
 			if err := work.Execute(workConfig); err != nil {
 				log.Crit("failed to execute work", "err", err, "enode", work.MailServerEnode)
