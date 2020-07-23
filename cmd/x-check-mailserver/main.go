@@ -1,11 +1,11 @@
 package main
 
 import (
-	"io/ioutil"
 	stdlog "log"
 	"math/rand"
 	"os"
 	stdsignal "os/signal"
+	"path"
 	"sort"
 	"sync"
 	"syscall"
@@ -21,6 +21,17 @@ func init() {
 	if err := logutils.OverrideRootLog(true, *verbosity, logutils.FileOptions{}, false); err != nil {
 		stdlog.Fatalf("failed to override root log: %v\n", err)
 	}
+}
+
+func getDataDir(msEnode, datadir string) (string, error) {
+	var fullDir string
+	var nodeId = enode.MustParse(msEnode).ID().String()
+	if datadir != "" {
+		fullDir = path.Join(datadir, nodeId)
+	} else {
+		fullDir = path.Join(os.TempDir(), "x-check-mailserver", nodeId)
+	}
+	return fullDir, os.MkdirAll(fullDir, os.FileMode(750))
 }
 
 func main() {
@@ -67,10 +78,9 @@ func main() {
 	wg.Add(len(mailserversToCheck))
 
 	for _, msEnode := range mailserversToCheck {
-		var nodeId = enode.MustParse(msEnode).ID().String()
-		config.DataDir, err = ioutil.TempDir(*datadir, nodeId)
+		config.DataDir, err = getDataDir(msEnode, *datadir)
 		if err != nil {
-			log.Crit("failed to create temp dir", "err", err)
+			log.Crit("failed to create data dir", "err", err)
 		}
 
 		nodeConfig := *config
